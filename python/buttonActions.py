@@ -5,6 +5,7 @@ import spotipy
 import spotipy.util as util
 import signal
 import RPi.GPIO as GPIO
+import time
 
 # some global stuff.
 # initial status
@@ -20,7 +21,6 @@ BUTTONS = [5, 6, 16, 24]
 # These correspond to buttons A, B, C and D respectively
 LABELS = ['A', 'B', 'C', 'D']
 
-
 def get_state(current_state: str) -> str:
     states = ['track', 'context', 'off']
     index = states.index(current_state)
@@ -28,7 +28,6 @@ def get_state(current_state: str) -> str:
         return states[index+1]
     else:
         return states[0]
-
 
 # "handle_button" will be called every time a button is pressed
 # It receives one argument: the associated input pin.
@@ -62,12 +61,10 @@ def handle_button(pin):
         sp.repeat(state=current_state)
         return
 
-
-# CTR + C event clean up GPIO setup and exit nicly
+# CTR + C event clean up GPIO setup and exit nicely
 def signal_handler(sig, frame):
     GPIO.cleanup()
     sys.exit(0)
-
 
 def main():
     # Set up RPi.GPIO with the "BCM" numbering scheme
@@ -77,20 +74,21 @@ def main():
     # with a "PULL UP", which weakly pulls the input signal to 3.3V.
     GPIO.setup(BUTTONS, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-    # Loop through out buttons and attach the "handle_button" function to each
-    # We're watching the "FALLING" edge (transition from 3.3V to Ground) and
-    # picking a generous bouncetime of 250ms to smooth out button presses.
-    for pin in BUTTONS:
-        GPIO.add_event_detect(pin, GPIO.FALLING, handle_button, bouncetime=250)
-
-    # Finally, since button handlers don't require a "while True" loop,
-    # We register the callback for CTRL+C handling
+    # Register the callback for CTRL+C handling
     signal.signal(signal.SIGINT, signal_handler)
-    # We register the callback for SIGTERM handling
+    # Register the callback for SIGTERM handling
     signal.signal(signal.SIGTERM, signal_handler)
-    # we pause the script to prevent it exiting immediately.
-    signal.pause()
 
+    try:
+        while True:
+            for pin in BUTTONS:
+                if GPIO.input(pin) == GPIO.LOW:  # Button pressed
+                    handle_button(pin)
+                    time.sleep(0.2)  # Debounce delay
+            time.sleep(0.1)  # Polling interval to avoid high CPU usage
+
+    except KeyboardInterrupt:
+        signal_handler(None, None)
 
 if __name__ == "__main__":
     main()
