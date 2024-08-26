@@ -21,6 +21,9 @@ BUTTONS = [5, 6, 16, 24]
 # These correspond to buttons A, B, C and D respectively
 LABELS = ['A', 'B', 'C', 'D']
 
+playlists = None
+current_playlist_index = 0
+
 def get_state(current_state: str) -> str:
     states = ['track', 'context', 'off']
     index = states.index(current_state)
@@ -57,9 +60,30 @@ def handle_button(pin):
             sp.pause_playback()
         return
     if label == 'D':
-        current_state = get_state(current_state)
-        sp.repeat(state=current_state)
-        return
+        global playlists, current_playlist_index
+
+        if playlists is None:
+            # Fetch current user's playlists the first time button is pressed
+            playlists = sp.current_user_playlists()
+            current_playlist_index = 0  # Start with the first playlist
+
+        if playlists and playlists['items']:
+            # Play the current playlist based on the index
+            if current_playlist_index < len(playlists['items']):
+                playlist = playlists['items'][current_playlist_index]
+                print("%4d %s %s" % (current_playlist_index + 1, playlist['uri'], playlist['name']))
+                sp.start_playback(context_uri=playlist['uri'])
+
+                # Increment the index for the next button press
+                current_playlist_index += 1
+
+                # If the index exceeds the number of playlists, reset it to loop through again
+                if current_playlist_index >= len(playlists['items']):
+                    current_playlist_index = 0
+
+            # Handle pagination if more playlists are available
+            if playlists['next'] and current_playlist_index == 0:
+                playlists = sp.next(playlists) 
 
 # CTR + C event clean up GPIO setup and exit nicely
 def signal_handler(sig, frame):
