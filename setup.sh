@@ -12,6 +12,20 @@ echo
 echo "###### Ensure system packages are installed:"
 sudo apt-get install python3-pip python3-venv python3-numpy git libopenjp2-7 -y
 echo
+echo "###### Enabling SPI"
+sudo raspi-config nonint do_spi 0
+echo "...done"
+echo
+
+echo "###### Enabling I2C"
+sudo raspi-config nonint do_i2c 0
+echo "...done"
+echo
+
+if [ -d "spotipi-eink" ]; then
+    echo "Old installation found deleting it"
+    sudo rm -rf spotipi-eink
+fi
 if [ -d "spotipi-eink" ]; then
     echo "Old installation found deleting it"
     sudo rm -rf spotipi-eink
