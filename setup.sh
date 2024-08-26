@@ -18,7 +18,7 @@ if [ -d "spotipi-eink" ]; then
 fi
 echo
 echo "###### Clone spotipy-eink git"
-git clone https://github.com/Gabbajoe/spotipi-eink
+git clone https://github.com/Canterrain/spotipi-eink
 echo "Switching into instalation directory"
 cd spotipi-eink
 install_path=$(pwd)
