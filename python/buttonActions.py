@@ -83,7 +83,7 @@ def handle_button(pin):
 
             # Handle pagination if more playlists are available
             if playlists['next'] and current_playlist_index == 0:
-                playlists = sp.next(playlists) 
+                playlists = sp.next(playlists)
 
 # CTR + C event clean up GPIO setup and exit nicely
 def signal_handler(sig, frame):
