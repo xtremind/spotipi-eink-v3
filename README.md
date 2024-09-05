@@ -20,7 +20,7 @@ Button functions:
 * Button A - next track
 * Button B - previous track
 * Button C - play/pause
-* Button D - toggle repeat order: track, context(playlist), off
+* Button D - switch playlist
 
 I is recommendation to use Raspberry Pi Zero 2.
 
@@ -108,7 +108,7 @@ In the file **spotipi/config/eink_options.ini** you can modify:
 * the displayed *title* and *artist* text size
 * the direction of how the title or artist text line break will be done, **top-down** or **bottom-up**
 * the offset from display borders
-* disable the small album cover
+* enable the small album cover
 * the size of the small album cover
 * the font that will be used
 
@@ -157,20 +157,4 @@ background_mode = fit
 ## Software
 * [Raspberry Pi Imager](https://www.raspberrypi.com/software/)
 
-## 3D printing
-### Free cases
-* [SpotiPi E-Ink - Inky Impression 5.7" Case](https://cults3d.com/en/3d-model/gadget/spotipi-e-ink-inky-impression-5-7-case)
-* [Pimoroni Inky Impression Case - 5.7" I guess](https://www.printables.com/de/model/51765-pimoroni-inky-impression-case/files)
-* [Inky Impression 5.7" Frame](https://www.printables.com/de/model/603008-inky-impression-57-frame)
-* [Inky Impression 7.3 e-Paper frame/case](https://www.printables.com/de/model/585713-inky-impression-73-e-paper-framecase)
-* [Pimoroni 7 color EInk display Frame](https://www.thingiverse.com/thing:4666925)
-* [Spotipi-eink Waveshare 4 inch case](https://www.printables.com/model/634213-spotipi-eink-waveshare-4-inch-case)
-### None free cases from Pimoroni
-* [Desktop Case for pimoroni Inky Impression 4" (7 colour ePaper/eInk HAT) and Raspberry Pi Zero/3 A+](https://cults3d.com/en/3d-model/gadget/desktop-case-for-pimoroni-inky-impression-4-7-colour-epaper-eink-hat-and-raspberry-pi-zero-3-a)
-* [Picture frame for pimoroni Inky Impression 5.7" (ePaper/eInk/EPD) and raspberry pi zero](https://cults3d.com/en/3d-model/gadget/picture-frame-for-pimoroni-inky-impression-epaper-eink-epd-and-raspberry-pi-zero)
-* [Enclosure for pimoroni Inky Impression (ePaper/eInk/EPD) and raspberry pi zero](https://cults3d.com/en/3d-model/gadget/enclosure-for-pimoroni-inky-impression-epaper-eink-epd-and-raspberry-pi-zero)
 
-## Show case
-Example picture of my 4" display in the Pimoroni Desktop case:
-![spotipi-eink Logo](/images/example.jpg)
-![spotipi-eink Logo](/images/no_song.jpg)
