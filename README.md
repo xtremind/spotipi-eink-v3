@@ -13,7 +13,7 @@ Table of Content
   - [Show case](#show-case)
 ## Overview
 This project displays album artwork and song info on a 4", 5.7" or 7,3" e-ink display from the Spotify web api.</br>
-You can also control Spotify via the 4 Buttons on the Pimoroni Display.[</br>
+You can also control Spotify via the 4 Buttons on the Pimoroni Display.</br>
 
 The original concecpt came from [Ryan Ward ](https://github.com/ryanwa18) and his video: [Youtube Video](https://www.youtube.com/watch?v=uQYIAYa27ds)
 This version is updated to account for the latest OS changes, virtual environments, and adds button controlls. 
