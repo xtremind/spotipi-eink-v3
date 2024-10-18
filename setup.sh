@@ -22,6 +22,38 @@ sudo raspi-config nonint do_i2c 0
 echo "...done"
 echo
 
+echo
+echo "###### Updating /boot/firmware/config.txt"
+config_file="/boot/firmware/config.txt"
+
+if ! grep -q "dtoverlay=spi0-0cs" "$config_file"; then
+    echo "Adding configuration to ${config_file}"
+    sudo tee -a "$config_file" > /dev/null <<EOL
+
+# Don't have the firmware create an initial video= setting in cmdline.txt.
+# Use the kernel's default instead.
+disable_fw_kms_setup=1
+
+# Disable compensation for displays with overscan
+disable_overscan=1
+
+# Run as fast as firmware / board allows
+arm_boost=1
+
+[cm4]
+# Enable host mode on the 2711 built-in XHCI USB controller.
+# This line should be removed if the legacy DWC2 controller is required
+# (e.g. for USB device mode) or if USB support is not required.
+otg_mode=1
+
+[all]
+dtoverlay=spi0-0cs
+EOL
+    echo "Configuration added to ${config_file}"
+else
+    echo "Configuration already exists in ${config_file}"
+fi
+
 if [ -d "spotipi-eink" ]; then
     echo "Old installation found deleting it"
     sudo rm -rf spotipi-eink
