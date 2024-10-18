@@ -16,7 +16,7 @@ This project displays album artwork and song info on a 4", 5.7" or 7,3" e-ink di
 You can also control Spotify via the 4 Buttons on the Pimoroni Display.</br>
 
 The original concecpt came from [Ryan Ward ](https://github.com/ryanwa18) and his video: [Youtube Video](https://www.youtube.com/watch?v=uQYIAYa27ds)
-This version is builds on work done by [GabbaJoe ](https://github.com/Gabbajoe) to account for the latest OS changes, add GPIO dependencings, handle virtual environments, and add button controlls (including playlist functionality).
+This version is builds on work done by [GabbaJoe ](https://github.com/Gabbajoe) to account for the latest OS changes, add GPIO dependencies, handle virtual environments, and add button controlls (including playlist functionality).
 
 Button functions:
 * Button A - next track
