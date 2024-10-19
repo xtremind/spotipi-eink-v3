@@ -1,6 +1,6 @@
 # Spotipi E-Ink
 ![spotipi-eink Logo](/images/example.jpg)</br>
-Table of Content
+Table of Contents
 - [Spotipi E-Ink](#spotipi-e-ink)
   - [Overview](#overview)
   - [Getting Started](#getting-started)
