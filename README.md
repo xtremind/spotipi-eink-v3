@@ -1,5 +1,5 @@
 # Spotipi E-Ink
-![spotipi-eink Logo](/images/logo.png)</br>
+![spotipi-eink Logo](/images/example.jpg)</br>
 Table of Content
 - [Spotipi E-Ink](#spotipi-e-ink)
   - [Overview](#overview)
@@ -119,11 +119,21 @@ background_mode = fit
 ```
 
 ## Supported Hardware
-* [Raspberry Pi Zero 2](https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/)
-* [Pimoroni Inky Impression 4"](https://shop.pimoroni.com/products/inky-impression-4?variant=39599238807635)
-* [Waveshare 4.01inch ACeP 7-Color E-Paper E-Ink Display HAT](https://www.waveshare.com/product/displays/e-paper/epaper-2/4.01inch-e-paper-hat-f.htm)
-* [Pimoroni Inky Impression 5.7"](https://shop.pimoroni.com/products/inky-impression-5-7?variant=32298701324371)
+* [Raspberry Pi Zero 2](https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/](https://amzn.to/4haKmgW)) (affiliate)
+* [Pimoroni Inky Impression 4"](https://collabs.shop/p3uwlu) (affiliate)
+* [Waveshare 4.01inch ACeP 7-Color E-Paper E-Ink Display HAT](https://amzn.to/409zZny) (affiliate)
+* [Pimoroni Inky Impression 5.7"](https://collabs.shop/fmdbjx) (affiliate)
 * [Pimoroni Inky Impression 7.3"](https://shop.pimoroni.com/products/inky-impression-7-3?variant=40512683376723)
+
+
+## 3D Printed Case
+A free STL for a case that fits the Pimoroni 5.7 display and Raspberry Pi is here:
+[Free STL](https://makerworld.com/en/models/713543#profileId-644007)
+It's a friction fit print, and no additional hardware is needed to snap everything together, this even includes buttons.
+
+Here's a few examples of the final print and product put together:
+![spotipi-eink Logo](/images/example.jpg)
+![spotipi-eink Logo](/images/example2.jpg)
 
 
 ## Software
