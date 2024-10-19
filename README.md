@@ -25,14 +25,14 @@ Button functions:
 * Button C - play/pause
 * Button D - switch playlist
 
-I recommend a Raspberry Pi Zero 2 with GPIO pins, which has the necessary power and is small enough to make a sleek final product.
+I recommend a Raspberry Pi Zero 2 with GPIO pins, which is both powerful enough to run the project and small enough to make a sleek final product.
 
 The display refresh time is ~30 seconds.
 
 ## Getting Started
 * Create a new application within the [Spotify developer dashboard](https://developer.spotify.com/dashboard/applications)
 * Edit the settings of the application within the dashboard.
-    * Set the redirect uri to any local url such as http://localhost/redirect
+    * Set the redirect to http://localhost/redirect
 
 * Enable SPI and I2C under "Interface Options" with the command:
 ```
@@ -54,7 +54,7 @@ After the spotipi-eink is installed you will have 2 new systemd services:
 * spotipi-eink-display.service
 * spotipi-eink-buttons.service (only for Pimoroni displays)
 
-This services run as the user with you used to execute setup.sh.
+These services run as the user you used to execute setup.sh.
 
 You control the services via systemctl **start, stop, status** *(services-name)*. Example get the status of *spotipi-eink-display.service*:
 ```
@@ -153,7 +153,7 @@ or
 journalctl -u spotipi-eink-display.service -u spotipi-eink-buttons.service --since today
 ```
 
-Spotipi-eink creates its own Python environment because since Raspberry PI OS **Bookworm** insists on protected environments for Python See:
+Spotipi-eink creates its own Python environment due to the fact that Raspberry PI OS **Bookworm** insists on protected environments for Python. See more here:
 * [Python on Raspberry Pi](https://www.raspberrypi.com/documentation/computers/os.html#python-on-raspberry-pi)
 * [PEP668](https://peps.python.org/pep-0668/)
 
@@ -162,7 +162,7 @@ This should be unnecessary, but if you wish to manually execute the Python scrip
 cd ~
 . spotipi/spotipi-eink/spotipienv/bin/activate
 ```
-Additionally you need to export the following 3 environment variables on you shell that the spotipy library is working.
+Additionally you will need to export the following 3 environment variables on your shell where the spotipy library is working.
 ```
 export SPOTIPY_CLIENT_ID=''
 export SPOTIPY_CLIENT_SECRET=''
