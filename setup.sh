@@ -22,38 +22,6 @@ sudo raspi-config nonint do_i2c 0
 echo "...done"
 echo
 
-echo
-echo "###### Updating /boot/firmware/config.txt"
-config_file="/boot/firmware/config.txt"
-
-if ! grep -q "dtoverlay=spi0-0cs" "$config_file"; then
-    echo "Adding configuration to ${config_file}"
-    sudo tee -a "$config_file" > /dev/null <<EOL
-
-# Don't have the firmware create an initial video= setting in cmdline.txt.
-# Use the kernel's default instead.
-disable_fw_kms_setup=1
-
-# Disable compensation for displays with overscan
-disable_overscan=1
-
-# Run as fast as firmware / board allows
-arm_boost=1
-
-[cm4]
-# Enable host mode on the 2711 built-in XHCI USB controller.
-# This line should be removed if the legacy DWC2 controller is required
-# (e.g. for USB device mode) or if USB support is not required.
-otg_mode=1
-
-[all]
-dtoverlay=spi0-0cs
-EOL
-    echo "Configuration added to ${config_file}"
-else
-    echo "Configuration already exists in ${config_file}"
-fi
-
 if [ -d "spotipi-eink" ]; then
     echo "Old installation found deleting it"
     sudo rm -rf spotipi-eink
@@ -115,6 +83,39 @@ if ! [ -d "${install_path}/resources" ]; then
     echo "creating ${install_path}/resources path"
     mkdir -p "${install_path}/resources"
 fi
+update_config_txt() {
+    echo
+    echo "###### Updating /boot/firmware/config.txt"
+    config_file="/boot/firmware/config.txt"
+
+    if ! grep -q "dtoverlay=spi0-0cs" "$config_file"; then
+        echo "Adding configuration to ${config_file}"
+        sudo tee -a "$config_file" > /dev/null <<EOL
+
+# Don't have the firmware create an initial video= setting in cmdline.txt.
+# Use the kernel's default instead.
+disable_fw_kms_setup=1
+
+# Disable compensation for displays with overscan
+disable_overscan=1
+
+# Run as fast as firmware / board allows
+arm_boost=1
+
+[cm4]
+# Enable host mode on the 2711 built-in XHCI USB controller.
+# This line should be removed if the legacy DWC2 controller is required
+# (e.g. for USB device mode) or if USB support is not required.
+otg_mode=1
+
+[all]
+dtoverlay=spi0-0cs
+EOL
+        echo "Configuration added to ${config_file}"
+    else
+        echo "Configuration already exists in ${config_file}"
+    fi
+}
 echo
 echo "###### Display setup"
 PS3="Please select your Display Model: "
@@ -129,6 +130,7 @@ do
             echo "album_cover_small_px = 200" >> ${install_path}/config/eink_options.ini
             echo "model = inky" >> ${install_path}/config/eink_options.ini
             export BUTTONS=1
+            update_config_txt
             break
             ;;
         "Waveshare 4.01inch ACeP 4 (640x400)")
@@ -147,6 +149,7 @@ do
             echo "album_cover_small_px = 250" >> ${install_path}/config/eink_options.ini
             echo "model = inky" >> ${install_path}/config/eink_options.ini
             export BUTTONS=1
+            update_config_txt
             break
             ;;
         "Pimoroni Inky Impression 7.3 (800x480)")
@@ -156,6 +159,7 @@ do
             echo "album_cover_small_px = 300" >> ${install_path}/config/eink_options.ini
             echo "model = inky" >> ${install_path}/config/eink_options.ini
             export BUTTONS=1
+            update_config_txt
             break
             ;;
         *)
