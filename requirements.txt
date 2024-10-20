@@ -1,5 +1,3 @@
 spotipy
 pillow
-requests
-RPi.GPIO
 inky[rpi,example-depends]
