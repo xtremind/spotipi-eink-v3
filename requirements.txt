@@ -1,3 +1,4 @@
 spotipy
 pillow
+rpi-lgpio
 inky[rpi,example-depends]
