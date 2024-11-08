@@ -32,12 +32,10 @@ The display refresh time is ~30 seconds.
 ## Getting Started
 * Create a new application within the [Spotify developer dashboard](https://developer.spotify.com/dashboard/applications)
 * Edit the settings of the application within the dashboard.
-    * Set the redirect to http://localhost/redirect
-
-* Enable SPI and I2C under "Interface Options" with the command:
-```
-sudo raspi-config
-```
+    * Set the redirect to
+      ```
+      http://localhost/redirect
+      ```
 
 * Download the install script
 ```
