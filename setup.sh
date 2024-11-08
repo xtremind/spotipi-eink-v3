@@ -41,7 +41,7 @@ echo "##### Creating Spotipi Python environment"
 python3 -m venv --system-site-packages spotipienv
 echo "Activating Spotipi Python environment"
 source ${install_path}/spotipienv/bin/activate
-echo Install Python packages: spotipy, pillow, requests, inky impression
+echo Install Python packages: spotipy, pillow, rpi-lgpio, inky impression
 pip3 install -r requirements.txt --upgrade
 echo "##### Spotipi Python environment created" 
 echo
