@@ -42,6 +42,8 @@ sudo raspi-config
 * Download the install script
 ```
 wget https://raw.githubusercontent.com/Canterrain/spotipi-eink/main/setup.sh
+```
+```
 chmod +x setup.sh
 ```
 
