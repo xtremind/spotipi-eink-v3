@@ -9,7 +9,7 @@ import traceback
 import configparser
 import requests
 import signal
-from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageEnhance
+from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageEnhance, ImageFilter
 
 
 # recursion limiter for get song info to not go to infinity as decorator
@@ -218,6 +218,7 @@ class SpotipiEinkDisplay:
         offset_px_bottom = self.config.getint('DEFAULT', 'offset_px_bottom')
         offset_text_px_shadow = self.config.getint('DEFAULT', 'offset_text_px_shadow')
         text_direction = self.config.get('DEFAULT', 'text_direction')
+        background_blur = self.config.getint('DEFAULT', 'background_blur', fallback=0)
         # The width and height of the background
         bg_w, bg_h = image.size
         if self.config.get('DEFAULT', 'background_mode') == 'fit':
@@ -240,6 +241,8 @@ class SpotipiEinkDisplay:
                 # no need to repeat just crop
                 image_new = image.crop((0, 0, self.config.getint('DEFAULT', 'width'), self.config.getint('DEFAULT', 'height')))
         if self.config.getboolean('DEFAULT', 'album_cover_small'):
+            if background_blur > 0:
+                image_new = image_new.filter(ImageFilter.GaussianBlur(background_blur))
             cover_smaller = image.resize([album_cover_small_px, album_cover_small_px], Image.LANCZOS)
             album_pos_x = (self.config.getint('DEFAULT', 'width') - album_cover_small_px) // 2
             image_new.paste(cover_smaller, [album_pos_x, offset_px_top])
