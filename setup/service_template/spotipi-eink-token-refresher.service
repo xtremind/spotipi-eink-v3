@@ -1,0 +1,19 @@
+[Unit]
+Description=Spotify E-Ink Display Token Refresher Service
+After=network.target
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+ExecStart={{ INSTALL_PATH }}/spotipienv/bin/python3 {{ INSTALL_PATH }}/python/tokenRefresher.py
+WorkingDirectory={{ INSTALL_PATH }}
+SyslogIdentifier=spotify-token-refresher
+Restart=on-failure
+RestartSec=5s
+KillSignal=SIGINT
+EnvironmentFile=/etc/systemd/system/spotipi-eink-display.service.d/spotipi-eink-display_env.conf
+User={{ USER_ID }}
+Group={{ GROUP_ID }}
+
+[Install]
+WantedBy=multi-user.target

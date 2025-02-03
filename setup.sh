@@ -234,6 +234,28 @@ sudo systemctl start spotipi-eink-display
 sudo systemctl enable spotipi-eink-display
 echo "...done"
 echo
+UID_TO_USE=$(id -u)
+GID_TO_USE=$(id -g)
+echo
+echo "Creating spotipi-eink-token-refresher service:"
+sudo cp "${install_path}/setup/service_template/spotipi-eink-token-refresher.service" /etc/systemd/system/
+sudo sed -i -e "/\[Service\]/a ExecStart=${install_path}/spotipienv/bin/python3 ${install_path}/python/tokenRefresher.py" /etc/systemd/system/spotipi-eink-token-refresher.service
+sudo sed -i -e "/ExecStart/a WorkingDirectory=${install_path}" /etc/systemd/system/spotipi-eink-token-refresher.service
+sudo sed -i -e "/EnvironmentFile/a User=${UID_TO_USE}" /etc/systemd/system/spotipi-eink-token-refresher.service
+sudo sed -i -e "/User/a Group=${GID_TO_USE}" /etc/systemd/system/spotipi-eink-token-refresher.service
+sudo mkdir -p /etc/systemd/system/spotipi-eink-display.service.d
+spotipi_env_path=/etc/systemd/system/spotipi-eink-display.service.d/spotipi-eink-display_env.conf
+if [ ! -f "$spotipi_env_path" ]; then
+    echo "[Service]" | sudo tee -a $spotipi_env_path > /dev/null
+    echo "Environment=\"SPOTIPY_CLIENT_ID=${spotify_client_id}\"" | sudo tee -a $spotipi_env_path > /dev/null
+    echo "Environment=\"SPOTIPY_CLIENT_SECRET=${spotify_client_secret}\"" | sudo tee -a $spotipi_env_path > /dev/null
+    echo "Environment=\"SPOTIPY_REDIRECT_URI=${spotify_redirect_uri}\"" | sudo tee -a $spotipi_env_path > /dev/null
+fi
+sudo systemctl daemon-reload
+sudo systemctl start spotipi-eink-token-refresher
+sudo systemctl enable spotipi-eink-token-refresher
+echo "...done"
+echo
 if [ "$BUTTONS" -eq "1" ]; then
     echo "###### Spotipi-eink button action service installation"
     echo
