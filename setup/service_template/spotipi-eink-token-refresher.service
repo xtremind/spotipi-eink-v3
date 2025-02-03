@@ -5,7 +5,7 @@ StartLimitIntervalSec=300
 StartLimitBurst=5
 
 [Service]
-ExecStart={{ INSTALL_PATH }}/spotipienv/bin/python3 {{ INSTALL_PATH }}/python/spotify_token_refresher.py
+ExecStart={{ INSTALL_PATH }}/spotipienv/bin/python3 {{ INSTALL_PATH }}/python/tokenRefresher.py
 WorkingDirectory={{ INSTALL_PATH }}
 SyslogIdentifier=spotify-token-refresher
 Restart=on-failure
