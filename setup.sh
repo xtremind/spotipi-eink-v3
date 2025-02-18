@@ -238,11 +238,25 @@ UID_TO_USE=$(id -u)
 GID_TO_USE=$(id -g)
 echo
 echo "Creating spotipi-eink-token-refresher service:"
-sudo cp "${install_path}/setup/service_template/spotipi-eink-token-refresher.service" /etc/systemd/system/
-sudo sed -i -e "/\[Service\]/a ExecStart=${install_path}/spotipienv/bin/python3 ${install_path}/python/tokenRefresher.py" /etc/systemd/system/spotipi-eink-token-refresher.service
-sudo sed -i -e "/ExecStart/a WorkingDirectory=${install_path}" /etc/systemd/system/spotipi-eink-token-refresher.service
-sudo sed -i -e "/EnvironmentFile/a User=${UID_TO_USE}" /etc/systemd/system/spotipi-eink-token-refresher.service
-sudo sed -i -e "/User/a Group=${GID_TO_USE}" /etc/systemd/system/spotipi-eink-token-refresher.service
+
+# Replace placeholders in the service template and write to systemd directory
+sed "s|{{ INSTALL_PATH }}|${install_path}|g; \
+     s|{{ USER_ID }}|${UID_TO_USE}|g; \
+     s|{{ GROUP_ID }}|${GID_TO_USE}|g" \
+    "${install_path}/setup/service_template/spotipi-eink-token-refresher.service" \
+    | sudo tee /etc/systemd/system/spotipi-eink-token-refresher.service > /dev/null
+
+# Ensure correct permissions for the service file
+sudo chmod 644 /etc/systemd/system/spotipi-eink-token-refresher.service
+
+# Create environment file directory if not exists
+sudo mkdir -p /etc/systemd/system/spotipi-eink-display.service.d
+
+# Reload systemd and enable the service
+sudo systemctl daemon-reload
+sudo systemctl enable --now spotipi-eink-token-refresher.service
+echo "...done"
+
 sudo mkdir -p /etc/systemd/system/spotipi-eink-display.service.d
 spotipi_env_path=/etc/systemd/system/spotipi-eink-display.service.d/spotipi-eink-display_env.conf
 if [ ! -f "$spotipi_env_path" ]; then
