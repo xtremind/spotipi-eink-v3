@@ -46,9 +46,8 @@ sp_oauth = SpotifyOAuth(
 
 sp = None
 
-
 def refresh_token_if_needed():
-    """Prüft, ob das Access Token bald abläuft und erneuert es, falls nötig"""
+    """Checks if the access token is about to expire and refreshes it if necessary."""
     global sp
     token_info = sp_oauth.get_cached_token()
 
@@ -61,17 +60,18 @@ def refresh_token_if_needed():
 
     if expires_at - current_time < 300:
         logger.info("Token is about to expire. Refreshing...")
-        new_token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
-
-        if new_token_info:
-            logger.info("Access token successfully refreshed!")
-            sp = spotipy.Spotify(auth=new_token_info["access_token"])
-        else:
-            logger.error("Error while refreshing access token!")
-
+        try:
+            new_token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
+            if new_token_info:
+                logger.info("Access token successfully refreshed!")
+                sp = spotipy.Spotify(auth=new_token_info["access_token"])
+            else:
+                logger.error("Error while refreshing access token!")
+        except Exception as e:
+            logger.error(f"Token refresh failed: {e}")
 
 def keep_spotify_alive():
-    """Sendet einen API-Request, um die Verbindung aktiv zu halten"""
+    """Send a harmless API request to keep the Spotify session alive."""
     global sp
     if not sp:
         token_info = sp_oauth.get_cached_token()
@@ -88,14 +88,18 @@ def keep_spotify_alive():
             logger.info("Spotify session is active.")
         else:
             logger.info("No active playback, but connection maintained.")
+    except spotipy.exceptions.SpotifyException as e:
+        logger.warning(f"Spotify API request failed: {e}")
     except Exception as e:
-        logger.error(f"Error during Keep-Alive request: {e}")
-
+        logger.error(f"Unexpected error during Keep-Alive request: {e}")
 
 if __name__ == "__main__":
     logger.info("Spotify Token Refresh & Keep-Alive Service started...")
 
     while True:
+        start_time = time.time()
         refresh_token_if_needed()
         keep_spotify_alive()
-        time.sleep(300)
+        elapsed_time = time.time() - start_time
+        sleep_time = max(300 - elapsed_time, 0)
+        time.sleep(sleep_time)
