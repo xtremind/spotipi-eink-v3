@@ -5,7 +5,7 @@ from spotipy.oauth2 import SpotifyOAuth
 import logging
 
 logging.basicConfig(
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(levelname)s - %(message)s",
     level=logging.INFO
 )
 logger = logging.getLogger("SpotifyTokenRefresher")
@@ -33,7 +33,7 @@ CLIENT_SECRET = os.environ.get("SPOTIPY_CLIENT_SECRET")
 REDIRECT_URI = os.environ.get("SPOTIPY_REDIRECT_URI")
 
 if not all([CLIENT_ID, CLIENT_SECRET, REDIRECT_URI]):
-    logger.error("Missing Spotify API envoirenment variables! Check your systemd-env-file.")
+    logger.error("Missing Spotify API environment variables! Check your systemd-env-file.")
     exit(1)
 
 sp_oauth = SpotifyOAuth(
@@ -44,9 +44,11 @@ sp_oauth = SpotifyOAuth(
     cache_path=CACHE_PATH
 )
 
+sp = None
 
 def refresh_token_if_needed():
-    """chekcs whether the access token is about to expire and renews it if necessary"""
+    """Checks if the access token is about to expire and refreshes it if necessary."""
+    global sp
     token_info = sp_oauth.get_cached_token()
 
     if not token_info:
@@ -58,16 +60,46 @@ def refresh_token_if_needed():
 
     if expires_at - current_time < 300:
         logger.info("Token is about to expire. Refreshing...")
-        new_token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
+        try:
+            new_token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
+            if new_token_info:
+                logger.info("Access token successfully refreshed!")
+                sp = spotipy.Spotify(auth=new_token_info["access_token"])
+            else:
+                logger.error("Error while refreshing access token!")
+        except Exception as e:
+            logger.error(f"Token refresh failed: {e}")
 
-        if new_token_info:
-            logger.info("Access token successfully refreshed!")
+def keep_spotify_alive():
+    """Send a harmless API request to keep the Spotify session alive."""
+    global sp
+    if not sp:
+        token_info = sp_oauth.get_cached_token()
+        if token_info:
+            sp = spotipy.Spotify(auth=token_info["access_token"])
         else:
-            logger.error("Error while refreshing access token!")
+            logger.error("No valid token found for Keep-Alive.")
+            return
 
+    try:
+        logger.info("Sending Keep-Alive request to Spotify API...")
+        current_playback = sp.current_playback()
+        if current_playback:
+            logger.info("Spotify session is active.")
+        else:
+            logger.info("No active playback, but connection maintained.")
+    except spotipy.exceptions.SpotifyException as e:
+        logger.warning(f"Spotify API request failed: {e}")
+    except Exception as e:
+        logger.error(f"Unexpected error during Keep-Alive request: {e}")
 
 if __name__ == "__main__":
-    logger.info("Spotify Token Refresh Service started...")
+    logger.info("Spotify Token Refresh & Keep-Alive Service started...")
+
     while True:
+        start_time = time.time()
         refresh_token_if_needed()
-        time.sleep(60)
+        keep_spotify_alive()
+        elapsed_time = time.time() - start_time
+        sleep_time = max(300 - elapsed_time, 0)
+        time.sleep(sleep_time)
