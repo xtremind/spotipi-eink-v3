@@ -51,6 +51,10 @@ if ! [ -d "${install_path}/config" ]; then
     mkdir -p "${install_path}/config"
 fi
 cd ${install_path}/config
+
+# REMOVE OLD TOKEN to force re-authentication
+echo "Removing old Spotify token to apply new permissions..."
+rm -f "${install_path}/config/.cache"
 echo "Enter your Spotify Client ID:"
 read spotify_client_id
 export SPOTIPY_CLIENT_ID=$spotify_client_id
