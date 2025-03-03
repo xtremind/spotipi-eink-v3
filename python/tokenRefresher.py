@@ -40,7 +40,7 @@ sp_oauth = SpotifyOAuth(
     client_id=CLIENT_ID,
     client_secret=CLIENT_SECRET,
     redirect_uri=REDIRECT_URI,
-    scope="user-read-currently-playing,user-modify-playback-state",
+    scope="user-read-currently-playing user-modify-playback-state user-read-playback-state",
     cache_path=CACHE_PATH
 )
 
