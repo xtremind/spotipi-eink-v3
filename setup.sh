@@ -50,7 +50,8 @@ if ! [ -d "${install_path}/config" ]; then
     echo "creating  ${install_path}/config path"
     mkdir -p "${install_path}/config"
 fi
-
+# Ensure idle_images directory exists
+mkdir -p "${install_path}/config/idle_images"
 # Ensure eink_options.ini exists with default settings
 EINK_CONFIG_FILE="${install_path}/config/eink_options.ini"
 if [ ! -f "$EINK_CONFIG_FILE" ]; then
