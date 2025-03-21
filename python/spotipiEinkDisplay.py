@@ -133,25 +133,36 @@ class SpotipiEinkDisplay:
             return []
 
     def start(self):
-        """Main service loop that continuously checks for new songs and updates display accordingly."""
-        self.logger.info('Service started')
-        self._display_clean()
-        try:
-            while True:
+    """Main service loop that continuously checks for new songs and updates display accordingly."""
+    self.logger.info('Service started')
+    self._display_clean()
+
+    try:
+        while True:
+            try:
                 song_request = self._get_song_info()
+
                 if song_request:
-                    if self.song_prev != song_request[0] + song_request[1]:
-                        self.song_prev = song_request[0] + song_request[1]
+                    song_key = song_request[0] + song_request[1]
+                    if self.song_prev != song_key:
+                        self.song_prev = song_key
                         self._display_update_process(song_request=song_request)
+
                 else:
                     if self.song_prev != 'NO_SONG':
                         self.song_prev = 'NO_SONG'
-                        self._display_update_process(song_request=song_request)
-                time.sleep(self.delay)
-        except KeyboardInterrupt:
-            self.logger.info('Service stopping')
-            sys.exit(0)
+                        self.logger.info("Entering idle mode (no song playing or API returned nothing)")
+                    self._cycle_idle_images()  # Will loop inside until music starts again
 
-if __name__ == "__main__":
-    service = SpotipiEinkDisplay()
-    service.start()
+            except Exception as e:
+                self.logger.error(f'Error during update loop: {e}')
+                self.logger.error(traceback.format_exc())
+                if self.song_prev != 'NO_SONG':
+                    self.song_prev = 'NO_SONG'
+                    self.logger.info("Entering idle mode due to exception")
+                self._cycle_idle_images()  # Same fallback behavior
+
+            time.sleep(self.delay)
+    except KeyboardInterrupt:
+        self.logger.info('Service stopping')
+        sys.exit(0)
