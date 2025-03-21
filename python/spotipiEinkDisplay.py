@@ -152,7 +152,7 @@ class SpotipiEinkDisplay:
                     if self.song_prev != 'NO_SONG':
                         self.song_prev = 'NO_SONG'
                         self.logger.info("Entering idle mode (no song playing or API returned nothing)")
-                    self._cycle_idle_images()  # Will loop inside until music starts again
+                        self._cycle_idle_images()
 
             except Exception as e:
                 self.logger.error(f'Error during update loop: {e}')
@@ -160,9 +160,10 @@ class SpotipiEinkDisplay:
                 if self.song_prev != 'NO_SONG':
                     self.song_prev = 'NO_SONG'
                     self.logger.info("Entering idle mode due to exception")
-                self._cycle_idle_images()  # Same fallback behavior
+                    self._cycle_idle_images()
 
             time.sleep(self.delay)
+
     except KeyboardInterrupt:
         self.logger.info('Service stopping')
         sys.exit(0)
