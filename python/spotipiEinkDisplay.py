@@ -106,7 +106,7 @@ class SpotipiEinkDisplay:
         self._display_image(image)
         self.pic_counter += 1
 
-    @limit_recursion(limit=10)
+@limit_recursion(limit=10)
 def _get_song_info(self) -> list:
     """Gets the currently playing song from Spotify API."""
     scope = 'user-read-currently-playing,user-modify-playback-state'
