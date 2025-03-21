@@ -50,6 +50,18 @@ if ! [ -d "${install_path}/config" ]; then
     echo "creating  ${install_path}/config path"
     mkdir -p "${install_path}/config"
 fi
+
+# Ensure eink_options.ini exists with default settings
+EINK_CONFIG_FILE="${install_path}/config/eink_options.ini"
+if [ ! -f "$EINK_CONFIG_FILE" ]; then
+    cat <<EOL > "$EINK_CONFIG_FILE"
+[DEFAULT]
+idle_mode = cycle  # Options: static, cycle
+idle_display_time = 300  # Time to display each image in seconds (default: 5 minutes)
+idle_shuffle = false  # If true, images will be displayed in random order
+EOL
+fi
+
 cd ${install_path}/config
 
 # REMOVE OLD TOKEN to force re-authentication
