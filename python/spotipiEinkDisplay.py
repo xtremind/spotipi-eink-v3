@@ -32,7 +32,7 @@ class SpotipiEinkDisplay:
     def __init__(self, delay=1):
         signal.signal(signal.SIGTERM, self._handle_sigterm)
         self.delay = delay
-        
+
         # Configuration for the display
         self.config = configparser.ConfigParser()
         self.config.read(os.path.join(os.path.dirname(__file__), '..', 'config', 'eink_options.ini'))
@@ -45,15 +45,15 @@ class SpotipiEinkDisplay:
         self.default_idle_image = self.config.get('DEFAULT', 'no_song_cover')
 
         # Set up logging
-        logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S', 
+        logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S',
                             filename=self.config.get('DEFAULT', 'spotipy_log'), level=logging.INFO)
         self.logger = logging.getLogger('spotipy_logger')
         handler = RotatingFileHandler(self.config.get('DEFAULT', 'spotipy_log'), maxBytes=2000, backupCount=3)
         self.logger.addHandler(handler)
-        
+
         self.song_prev = ''
         self.pic_counter = 0
-        
+
         if self.config.get('DEFAULT', 'model') == 'inky':
             from inky.auto import auto
             from inky.inky_uc8159 import CLEAN
@@ -95,7 +95,7 @@ class SpotipiEinkDisplay:
             if self.idle_mode == "cycle":
                 self.logger.info("Entering idle image cycling mode.")
                 self._cycle_idle_images()
-                return  
+                return
             else:
                 image = self._gen_pic(Image.open(self.default_idle_image), 'spotipi-eink', 'No song playing')
 
@@ -106,56 +106,55 @@ class SpotipiEinkDisplay:
         self._display_image(image)
         self.pic_counter += 1
 
-@limit_recursion(limit=10)
-def _get_song_info(self) -> list:
-    """Gets the currently playing song from Spotify API."""
-    scope = 'user-read-currently-playing,user-modify-playback-state'
-    try:
-        token = util.prompt_for_user_token(
-            username=self.config.get('DEFAULT', 'username'),
-            scope=scope,
-            cache_path=self.config.get('DEFAULT', 'token_file')
-        )
-        if token:
-            sp = spotipy.Spotify(auth=token)
-            result = sp.currently_playing(additional_types='episode')
-            if result:
-                try:
-                    if result['currently_playing_type'] == 'episode':
-                        return [
-                            result["item"]["name"],
-                            result["item"]["images"][0]["url"],
-                            result["item"]["show"]["name"]
-                        ]
-                    elif result['currently_playing_type'] == 'track':
-                        artist_names = ', '.join([artist["name"] for artist in result["item"]["artists"]])
-                        return [
-                            result["item"]["name"],
-                            result["item"]["album"]["images"][0]["url"],
-                            artist_names
-                        ]
-                    elif result['currently_playing_type'] in ['ad', 'unknown']:
-                        return []
-                except TypeError:
-                    self.logger.warning('TypeError in currently playing result. Retrying.')
-                    time.sleep(0.01)
-                    return self._get_song_info()
+    @limit_recursion(limit=10)
+    def _get_song_info(self) -> list:
+        """Gets the currently playing song from Spotify API."""
+        scope = 'user-read-currently-playing,user-modify-playback-state'
+        try:
+            token = util.prompt_for_user_token(
+                username=self.config.get('DEFAULT', 'username'),
+                scope=scope,
+                cache_path=self.config.get('DEFAULT', 'token_file')
+            )
+            if token:
+                sp = spotipy.Spotify(auth=token)
+                result = sp.currently_playing(additional_types='episode')
+                if result:
+                    try:
+                        if result['currently_playing_type'] == 'episode':
+                            return [
+                                result["item"]["name"],
+                                result["item"]["images"][0]["url"],
+                                result["item"]["show"]["name"]
+                            ]
+                        elif result['currently_playing_type'] == 'track':
+                            artist_names = ', '.join([artist["name"] for artist in result["item"]["artists"]])
+                            return [
+                                result["item"]["name"],
+                                result["item"]["album"]["images"][0]["url"],
+                                artist_names
+                            ]
+                        elif result['currently_playing_type'] in ['ad', 'unknown']:
+                            return []
+                    except TypeError:
+                        self.logger.warning('TypeError in currently playing result. Retrying.')
+                        time.sleep(0.01)
+                        return self._get_song_info()
+                return []
+            else:
+                self.logger.warning("Token retrieval failed — possibly due to expired token or lack of Premium.")
+                return []
+        except spotipy.exceptions.SpotifyException as e:
+            self.logger.error(f"SpotifyException: {e}")
+            self.logger.warning("Falling back to idle mode due to Spotify API error (likely expired token or no Premium).")
             return []
-        else:
-            self.logger.warning("Token retrieval failed — possibly due to expired token or lack of Premium.")
+        except Exception as e:
+            self.logger.error(f"Unexpected error in _get_song_info: {e}")
+            self.logger.error(traceback.format_exc())
             return []
-    except spotipy.exceptions.SpotifyException as e:
-        self.logger.error(f"SpotifyException: {e}")
-        self.logger.warning("Falling back to idle mode due to Spotify API error (likely expired token or no Premium).")
-        return []
-    except Exception as e:
-        self.logger.error(f"Unexpected error in _get_song_info: {e}")
-        self.logger.error(traceback.format_exc())
-        return []
-
 
     def start(self):
-    """Main service loop that continuously checks for new songs and updates display accordingly."""
+        """Main service loop that continuously checks for new songs and updates display accordingly."""
         self.logger.info('Service started')
         self._display_clean()
 
@@ -169,12 +168,11 @@ def _get_song_info(self) -> list:
                         if self.song_prev != song_key:
                             self.song_prev = song_key
                             self._display_update_process(song_request=song_request)
-
                     else:
                         if self.song_prev != 'NO_SONG':
                             self.song_prev = 'NO_SONG'
                             self.logger.info("Entering idle mode (no song playing or API returned nothing)")
-                            self._cycle_idle_images()
+                        self._cycle_idle_images()
 
                 except Exception as e:
                     self.logger.error(f'Error during update loop: {e}')
@@ -182,10 +180,14 @@ def _get_song_info(self) -> list:
                     if self.song_prev != 'NO_SONG':
                         self.song_prev = 'NO_SONG'
                         self.logger.info("Entering idle mode due to exception")
-                        self._cycle_idle_images()
+                    self._cycle_idle_images()
 
-            time.sleep(self.delay)
+                time.sleep(self.delay)
 
-    except KeyboardInterrupt:
-        self.logger.info('Service stopping')
-        sys.exit(0)
+        except KeyboardInterrupt:
+            self.logger.info('Service stopping')
+            sys.exit(0)
+
+if __name__ == "__main__":
+    service = SpotipiEinkDisplay()
+    service.start()
