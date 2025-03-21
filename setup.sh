@@ -55,7 +55,6 @@ mkdir -p "${install_path}/config/idle_images"
 # Ensure eink_options.ini exists with default settings
 EINK_CONFIG_FILE="${install_path}/config/eink_options.ini"
 if [ ! -f "$EINK_CONFIG_FILE" ]; then
-    if [ ! -f "$EINK_CONFIG_FILE" ]; then
     cat <<EOF > "$EINK_CONFIG_FILE"
 [DEFAULT]
 # Options: static, cycle
@@ -68,4 +67,16 @@ no_song_cover = ${install_path}/resources/default.jpg
 spotipy_log = ${install_path}/log/spotipy.log
 EOF
 fi
+
+# Ensure essential options exist in existing ini
+ensure_config_option() {
+    local key="$1"
+    local value="$2"
+    if ! grep -q "^$key\s*=" "$EINK_CONFIG_FILE"; then
+        echo "$key = $value" >> "$EINK_CONFIG_FILE"
+    fi
+}
+
+ensure_config_option "no_song_cover" "${install_path}/resources/default.jpg"
+ensure_config_option "spotipy_log" "${install_path}/log/spotipy.log"
 
