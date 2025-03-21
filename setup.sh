@@ -55,6 +55,7 @@ mkdir -p "${install_path}/config/idle_images"
 # Ensure eink_options.ini exists with default settings
 EINK_CONFIG_FILE="${install_path}/config/eink_options.ini"
 if [ ! -f "$EINK_CONFIG_FILE" ]; then
+if [ ! -f "$EINK_CONFIG_FILE" ]; then
     cat <<EOL > "$EINK_CONFIG_FILE"
 [DEFAULT]
 # Options: static, cycle
@@ -63,5 +64,6 @@ idle_mode = cycle
 idle_display_time = 300
 # If true, images will be displayed in random order
 idle_shuffle = false
+no_song_cover = ${install_path}/resources/default.jpg
 EOL
 fi
