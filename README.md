@@ -119,6 +119,34 @@ text_direction = bottom-up
 background_mode = fit
 ```
 
+# Idle Image Mode
+When no song is playing, **Spotipi eInk Display** can show **custom idle images**. Users can choose between **static** and **cycling** idle images.
+
+### Configuration Options:
+Modify these settings in **eink_options.ini**:
+```
+[DEFAULT]
+idle_mode = cycle  # Options: static, cycle
+idle_display_time = 300  # Time to display each image in seconds (default: 5 minutes)
+idle_shuffle = false  # If true, images will be displayed in random order
+```
+
+### Idle Image Modes:
+- **static** - Displays a **single** idle image (set by `no_song_cover`).
+- **cycle** - Rotates through multiple images from the `config/idle_images/` folder.
+
+### How to Add Custom Idle Images:
+1. Navigate to the **`config/idle_images/`** folder (create it if it doesn’t exist).
+2. Add your images (**PNG, JPG, JPEG** formats supported).
+3. If `idle_mode` is set to **cycle**, the display will cycle through all images in this folder.
+4. Set `idle_shuffle = true` in `eink_options.ini` to shuffle the images randomly.
+
+### Important Notes:
+- If no images are found in `idle_images/`, the **default idle image** (`no_song_cover`) will be used.
+- The screen refresh rate is controlled by `idle_display_time` (default: **5 minutes**).
+- If music starts playing, the display **automatically** switches back to album art.
+
+
 ## Supported Hardware
 * [Raspberry Pi Zero 2](https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/](https://amzn.to/4haKmgW)) (affiliate)
 * [Pimoroni Inky Impression 4"](https://collabs.shop/p3uwlu) (affiliate)
