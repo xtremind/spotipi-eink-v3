@@ -107,30 +107,52 @@ class SpotipiEinkDisplay:
         self.pic_counter += 1
 
     @limit_recursion(limit=10)
-    def _get_song_info(self) -> list:
-        """Gets the currently playing song from Spotify API."""
-        scope = 'user-read-currently-playing,user-modify-playback-state'
-        token = util.prompt_for_user_token(username=self.config.get('DEFAULT', 'username'), scope=scope, cache_path=self.config.get('DEFAULT', 'token_file'))
+def _get_song_info(self) -> list:
+    """Gets the currently playing song from Spotify API."""
+    scope = 'user-read-currently-playing,user-modify-playback-state'
+    try:
+        token = util.prompt_for_user_token(
+            username=self.config.get('DEFAULT', 'username'),
+            scope=scope,
+            cache_path=self.config.get('DEFAULT', 'token_file')
+        )
         if token:
             sp = spotipy.Spotify(auth=token)
             result = sp.currently_playing(additional_types='episode')
             if result:
                 try:
                     if result['currently_playing_type'] == 'episode':
-                        return [result["item"]["name"], result["item"]["images"][0]["url"], result["item"]["show"]["name"]]
-                    if result['currently_playing_type'] == 'track':
+                        return [
+                            result["item"]["name"],
+                            result["item"]["images"][0]["url"],
+                            result["item"]["show"]["name"]
+                        ]
+                    elif result['currently_playing_type'] == 'track':
                         artist_names = ', '.join([artist["name"] for artist in result["item"]["artists"]])
-                        return [result["item"]["name"], result["item"]["album"]["images"][0]["url"], artist_names]
-                    if result['currently_playing_type'] in ['unknown', 'ad']:
+                        return [
+                            result["item"]["name"],
+                            result["item"]["album"]["images"][0]["url"],
+                            artist_names
+                        ]
+                    elif result['currently_playing_type'] in ['ad', 'unknown']:
                         return []
                 except TypeError:
-                    self.logger.error('Error: TypeError')
+                    self.logger.warning('TypeError in currently playing result. Retrying.')
                     time.sleep(0.01)
                     return self._get_song_info()
             return []
         else:
-            self.logger.error(f"Error: Can't get token for {self.config.get('DEFAULT', 'username')}")
+            self.logger.warning("Token retrieval failed — possibly due to expired token or lack of Premium.")
             return []
+    except spotipy.exceptions.SpotifyException as e:
+        self.logger.error(f"SpotifyException: {e}")
+        self.logger.warning("Falling back to idle mode due to Spotify API error (likely expired token or no Premium).")
+        return []
+    except Exception as e:
+        self.logger.error(f"Unexpected error in _get_song_info: {e}")
+        self.logger.error(traceback.format_exc())
+        return []
+
 
     def start(self):
     """Main service loop that continuously checks for new songs and updates display accordingly."""
