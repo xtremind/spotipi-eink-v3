@@ -36,6 +36,12 @@ class SpotipiEinkDisplay:
         # Configuration for the matrix
         self.config = configparser.ConfigParser()
         self.config.read(os.path.join(os.path.dirname(__file__), '..', 'config', 'eink_options.ini'))
+        # Load idle mode settings
+        self.idle_mode = self.config.get('DEFAULT', 'idle_mode', fallback='cycle')
+        self.idle_display_time = self.config.getint('DEFAULT', 'idle_display_time', fallback=300)
+        self.idle_shuffle = self.config.getboolean('DEFAULT', 'idle_shuffle', fallback=False)
+        self.idle_folder = os.path.join(os.path.dirname(__file__), '..', 'config', 'idle_images')
+        self.default_idle_image = self.config.get('DEFAULT', 'no_song_cover')
         # set spotipoy lib logger
         logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S', filename=self.config.get('DEFAULT', 'spotipy_log'), level=logging.INFO)
         logger = logging.getLogger('spotipy_logger')
@@ -259,6 +265,24 @@ class SpotipiEinkDisplay:
             title_position_y = self.config.getint('DEFAULT', 'height') - (offset_px_bottom + self.config.getint('DEFAULT', 'font_size_title')) - artist_height
             self._fit_text_bottom_up(img=image_new, text=title, text_color='white', shadow_text_color='black', font=font_title, font_size=self.config.getint('DEFAULT', 'font_size_title'), y_offset=title_position_y, x_start_offset=offset_px_left, x_end_offset=offset_px_right, offset_text_px_shadow=offset_text_px_shadow)
         return image_new
+    def _cycle_idle_images(self):
+        """Cycles through images in the idle folder while idle."""
+        images = [os.path.join(self.idle_folder, img) for img in os.listdir(self.idle_folder) if img.endswith(('.png', '.jpg', '.jpeg'))]
+
+        if not images:  # If no user-uploaded images, fall back to default
+            images.append(self.default_idle_image)
+
+        # Shuffle images if enabled
+        if self.idle_shuffle:
+            random.shuffle(images)
+
+        for image_path in images:
+            self.logger.info(f"Displaying idle image: {image_path}")
+            self._display_update_process([None, image_path, ""])  # Display the image
+            time.sleep(self.idle_display_time)  # Wait before changing image
+
+            if self._get_song_info():  # Exit idle mode if music starts
+                return  
 
     def _display_update_process(self, song_request: list):
         """Display update process that jude by the song_request list if a song is playing and we need to download the album cover or not
@@ -275,8 +299,14 @@ class SpotipiEinkDisplay:
             # download cover
             image = self._gen_pic(Image.open(requests.get(song_request[1], stream=True).raw), song_request[2], song_request[0])
         else:
-            # not song playing use logo
-            image = self._gen_pic(Image.open(self.config.get('DEFAULT', 'no_song_cover')), 'spotipi-eink', 'No song playing')
+        if self.idle_mode == "cycle":
+            self.logger.info("Entering idle image cycling mode.")
+            self._cycle_idle_images()
+            return  # Exit function once cycle mode starts
+        else:
+        # Default static idle image
+        image = self._gen_pic(Image.open(self.default_idle_image), 'spotipi-eink', 'No song playing')
+
         # clean screen every x pics
         if self.pic_counter > self.config.getint('DEFAULT', 'display_refresh_counter'):
             self._display_clean()
