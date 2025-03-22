@@ -269,122 +269,131 @@ class SpotipiEinkDisplay:
             self.logger.error(f'Display image error: {e}')
             self.logger.error(traceback.format_exc())
 
-    def _gen_pic(self, image: Image, artist: str, title: str) -> Image:
-        """
-        Generates the final composite image with the album artwork (or idle image),
-        background blur (if configured), and the text (title/artist).
-        """
-        album_cover_small_px = self.config.getint('DEFAULT', 'album_cover_small_px')
-        offset_px_left = self.config.getint('DEFAULT', 'offset_px_left')
-        offset_px_right = self.config.getint('DEFAULT', 'offset_px_right')
-        offset_px_top = self.config.getint('DEFAULT', 'offset_px_top')
-        offset_px_bottom = self.config.getint('DEFAULT', 'offset_px_bottom')
-        offset_text_px_shadow = self.config.getint('DEFAULT', 'offset_text_px_shadow', fallback=0)
-        text_direction = self.config.get('DEFAULT', 'text_direction', fallback='top-down')
-        background_blur = self.config.getint('DEFAULT', 'background_blur', fallback=0)
+def _gen_pic(self, image: Image, artist: str, title: str, show_small_cover: bool) -> Image:
+    """
+    Generates the final composite image with the album artwork (or idle image),
+    background blur (if configured), and optional text (title/artist).
 
-        # Dimensions of source image
-        bg_w, bg_h = image.size
+    The new 'show_small_cover' parameter controls whether we paste
+    a small overlay version of the image at the top, ignoring the config
+    if show_small_cover = False.
+    """
+    album_cover_small_px = self.config.getint('DEFAULT', 'album_cover_small_px')
+    offset_px_left = self.config.getint('DEFAULT', 'offset_px_left')
+    offset_px_right = self.config.getint('DEFAULT', 'offset_px_right')
+    offset_px_top = self.config.getint('DEFAULT', 'offset_px_top')
+    offset_px_bottom = self.config.getint('DEFAULT', 'offset_px_bottom')
+    offset_text_px_shadow = self.config.getint('DEFAULT', 'offset_text_px_shadow', fallback=0)
+    text_direction = self.config.get('DEFAULT', 'text_direction', fallback='top-down')
+    background_blur = self.config.getint('DEFAULT', 'background_blur', fallback=0)
 
-        # Fit or repeat background
-        if self.config.get('DEFAULT', 'background_mode') == 'fit':
-            # Resize or crop to the device's final width/height
-            target_size = (self.config.getint('DEFAULT', 'width'), self.config.getint('DEFAULT', 'height'))
-            if bg_w != target_size[0] or bg_h != target_size[1]:
-                image_new = ImageOps.fit(image, target_size, centering=(0.5, 0.5))
-            else:
-                image_new = image.crop((0, 0, target_size[0], target_size[1]))
-        elif self.config.get('DEFAULT', 'background_mode') == 'repeat':
-            target_w = self.config.getint('DEFAULT', 'width')
-            target_h = self.config.getint('DEFAULT', 'height')
-            image_new = Image.new('RGB', (target_w, target_h))
-            for x in range(0, target_w, bg_w):
-                for y in range(0, target_h, bg_h):
-                    image_new.paste(image, (x, y))
+    # Dimensions of source image
+    bg_w, bg_h = image.size
+
+    # Fit or repeat background
+    if self.config.get('DEFAULT', 'background_mode') == 'fit':
+        target_size = (self.config.getint('DEFAULT', 'width'), self.config.getint('DEFAULT', 'height'))
+        if bg_w != target_size[0] or bg_h != target_size[1]:
+            image_new = ImageOps.fit(image, target_size, centering=(0.5, 0.5))
         else:
-            # Fallback: just crop or do nothing
-            target_size = (self.config.getint('DEFAULT', 'width'), self.config.getint('DEFAULT', 'height'))
             image_new = image.crop((0, 0, target_size[0], target_size[1]))
+    elif self.config.get('DEFAULT', 'background_mode') == 'repeat':
+        target_w = self.config.getint('DEFAULT', 'width')
+        target_h = self.config.getint('DEFAULT', 'height')
+        image_new = Image.new('RGB', (target_w, target_h))
+        for x in range(0, target_w, bg_w):
+            for y in range(0, target_h, bg_h):
+                image_new.paste(image, (x, y))
+    else:
+        # Fallback: just crop or do nothing
+        target_size = (self.config.getint('DEFAULT', 'width'), self.config.getint('DEFAULT', 'height'))
+        image_new = image.crop((0, 0, target_size[0], target_size[1]))
 
-        # If we want a blurred background, do it now (before we paste the small cover)
-        if background_blur > 0:
-            image_new = image_new.filter(ImageFilter.GaussianBlur(background_blur))
+    # If we want a blurred background, do it now (before we paste the small cover)
+    if background_blur > 0:
+        image_new = image_new.filter(ImageFilter.GaussianBlur(background_blur))
 
-        # If the config says "album_cover_small = True", we paste a smaller version of the image
-        if self.config.getboolean('DEFAULT', 'album_cover_small'):
-            cover_smaller = image.resize((album_cover_small_px, album_cover_small_px), Image.LANCZOS)
-            album_pos_x = (image_new.width - album_cover_small_px) // 2
-            image_new.paste(cover_smaller, (album_pos_x, offset_px_top))
+    # Only paste a smaller version if BOTH 'show_small_cover' is True
+    # AND the config says album_cover_small is True.
+    if show_small_cover and self.config.getboolean('DEFAULT', 'album_cover_small'):
+        cover_smaller = image.resize((album_cover_small_px, album_cover_small_px), Image.LANCZOS)
+        album_pos_x = (image_new.width - album_cover_small_px) // 2
+        image_new.paste(cover_smaller, (album_pos_x, offset_px_top))
 
-        # Prepare fonts
-        font_title = ImageFont.truetype(self.config.get('DEFAULT', 'font_path'),
-                                        self.config.getint('DEFAULT', 'font_size_title'))
-        font_artist = ImageFont.truetype(self.config.get('DEFAULT', 'font_path'),
-                                         self.config.getint('DEFAULT', 'font_size_artist'))
+    # Prepare fonts
+    font_title = ImageFont.truetype(self.config.get('DEFAULT', 'font_path'),
+                                    self.config.getint('DEFAULT', 'font_size_title'))
+    font_artist = ImageFont.truetype(self.config.get('DEFAULT', 'font_path'),
+                                     self.config.getint('DEFAULT', 'font_size_artist'))
 
-        draw = ImageDraw.Draw(image_new)
+    draw = ImageDraw.Draw(image_new)
 
-        # Render text depending on top-down or bottom-up
-        if text_direction == 'top-down':
-            # Place the song title first
-            title_position_y = offset_px_top + album_cover_small_px + 10
-            title_height = self._fit_text_top_down(
-                img=image_new,
-                text=title,
-                text_color='white',
-                shadow_text_color='black',
-                font=font_title,
-                font_size=self.config.getint('DEFAULT', 'font_size_title'),
-                y_offset=title_position_y,
-                x_start_offset=offset_px_left,
-                x_end_offset=offset_px_right,
-                offset_text_px_shadow=offset_text_px_shadow
-            )
-            # Then place the artist text just below title
-            artist_position_y = title_position_y + title_height
-            self._fit_text_top_down(
-                img=image_new,
-                text=artist,
-                text_color='white',
-                shadow_text_color='black',
-                font=font_artist,
-                font_size=self.config.getint('DEFAULT', 'font_size_artist'),
-                y_offset=artist_position_y,
-                x_start_offset=offset_px_left,
-                x_end_offset=offset_px_right,
-                offset_text_px_shadow=offset_text_px_shadow
-            )
+    # Render text depending on top-down or bottom-up
+    if text_direction == 'top-down':
+        # Place the song title first
+        title_position_y = offset_px_top
+        # If we *did* paste a smaller cover, bump text below it
+        if show_small_cover and self.config.getboolean('DEFAULT', 'album_cover_small'):
+            title_position_y += album_cover_small_px + 10
 
-        elif text_direction == 'bottom-up':
-            # Place the artist first, hugging bottom
-            artist_position_y = image_new.height - (offset_px_bottom + self.config.getint('DEFAULT', 'font_size_artist'))
-            artist_height = self._fit_text_bottom_up(
-                img=image_new,
-                text=artist,
-                text_color='white',
-                shadow_text_color='black',
-                font=font_artist,
-                font_size=self.config.getint('DEFAULT', 'font_size_artist'),
-                y_offset=artist_position_y,
-                x_start_offset=offset_px_left,
-                x_end_offset=offset_px_right,
-                offset_text_px_shadow=offset_text_px_shadow
-            )
-            # Then title above that
-            title_position_y = artist_position_y - self.config.getint('DEFAULT', 'font_size_title') - artist_height
-            self._fit_text_bottom_up(
-                img=image_new,
-                text=title,
-                text_color='white',
-                shadow_text_color='black',
-                font=font_title,
-                font_size=self.config.getint('DEFAULT', 'font_size_title'),
-                y_offset=title_position_y,
-                x_start_offset=offset_px_left,
-                x_end_offset=offset_px_right,
-                offset_text_px_shadow=offset_text_px_shadow
-            )
-        return image_new  # end of _gen_pic
+        title_height = self._fit_text_top_down(
+            img=image_new,
+            text=title,
+            text_color='white',
+            shadow_text_color='black',
+            font=font_title,
+            font_size=self.config.getint('DEFAULT', 'font_size_title'),
+            y_offset=title_position_y,
+            x_start_offset=offset_px_left,
+            x_end_offset=offset_px_right,
+            offset_text_px_shadow=offset_text_px_shadow
+        )
+        # Then place the artist text just below title
+        artist_position_y = title_position_y + title_height
+        self._fit_text_top_down(
+            img=image_new,
+            text=artist,
+            text_color='white',
+            shadow_text_color='black',
+            font=font_artist,
+            font_size=self.config.getint('DEFAULT', 'font_size_artist'),
+            y_offset=artist_position_y,
+            x_start_offset=offset_px_left,
+            x_end_offset=offset_px_right,
+            offset_text_px_shadow=offset_text_px_shadow
+        )
+
+    elif text_direction == 'bottom-up':
+        # Place the artist first, hugging bottom
+        artist_position_y = image_new.height - (offset_px_bottom + self.config.getint('DEFAULT', 'font_size_artist'))
+        artist_height = self._fit_text_bottom_up(
+            img=image_new,
+            text=artist,
+            text_color='white',
+            shadow_text_color='black',
+            font=font_artist,
+            font_size=self.config.getint('DEFAULT', 'font_size_artist'),
+            y_offset=artist_position_y,
+            x_start_offset=offset_px_left,
+            x_end_offset=offset_px_right,
+            offset_text_px_shadow=offset_text_px_shadow
+        )
+        # Then title above that
+        title_position_y = artist_position_y - self.config.getint('DEFAULT', 'font_size_title') - artist_height
+        self._fit_text_bottom_up(
+            img=image_new,
+            text=title,
+            text_color='white',
+            shadow_text_color='black',
+            font=font_title,
+            font_size=self.config.getint('DEFAULT', 'font_size_title'),
+            y_offset=title_position_y,
+            x_start_offset=offset_px_left,
+            x_end_offset=offset_px_right,
+            offset_text_px_shadow=offset_text_px_shadow
+        )
+
+    return image_new
 
     def _display_update_process(self, song_request: list):
         """
@@ -408,7 +417,7 @@ class SpotipiEinkDisplay:
         else:
             # No song is playing -> use the idle logic
             idle_img = self._get_idle_image()
-            image = self._gen_pic(idle_img, "spotipi-eink", "No song playing")
+            image = self._gen_pic(idle_img, "", "")
 
         # Clean the screen after N refreshes
         refresh_limit = self.config.getint('DEFAULT', 'display_refresh_counter', fallback=20)
