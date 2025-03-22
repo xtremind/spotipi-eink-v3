@@ -34,22 +34,22 @@ class SpotipiEinkDisplay:
 
         self.delay = delay
         self.config = configparser.ConfigParser()
+        # Reads ../config/eink_options.ini relative to this Python file's location
         self.config.read(os.path.join(os.path.dirname(__file__), '..', 'config', 'eink_options.ini'))
 
         # ---------------------------------------------------------------------
-        # New "idle" feature settings from the current file
+        # "idle" features
         # ---------------------------------------------------------------------
         self.idle_mode = self.config.get('DEFAULT', 'idle_mode', fallback='cycle')
         self.idle_display_time = self.config.getint('DEFAULT', 'idle_display_time', fallback=300)
         self.idle_shuffle = self.config.getboolean('DEFAULT', 'idle_shuffle', fallback=False)
         self.idle_folder = os.path.join(os.path.dirname(__file__), '..', 'config', 'idle_images')
         self.default_idle_image = self.config.get('DEFAULT', 'no_song_cover')
-        # Cache idle images for cycling/shuffle
         self.idle_images = self._load_idle_images()
         self.idle_index = 0
 
         # ---------------------------------------------------------------------
-        # Logging setup (merge of old & new)
+        # Logging
         # ---------------------------------------------------------------------
         logging.basicConfig(
             format='%(asctime)s %(message)s',
@@ -58,7 +58,6 @@ class SpotipiEinkDisplay:
             level=logging.INFO
         )
         logger = logging.getLogger('spotipy_logger')
-        # Use rotating file handler to limit log size
         handler = RotatingFileHandler(
             self.config.get('DEFAULT', 'spotipy_log'),
             maxBytes=2000,
@@ -68,7 +67,7 @@ class SpotipiEinkDisplay:
         self.logger = logger
         self.logger.info('Logger test: initialization complete')
 
-        # Create a more verbose console logger
+        # A more verbose console logger
         self.logger = self._init_logger()
         self.logger.info('Service instance created')
 
@@ -86,14 +85,14 @@ class SpotipiEinkDisplay:
             self.wave4 = epd4in01f
             self.logger.info('Loading Waveshare 4" library')
 
-        # Track previous song and how many times we’ve refreshed
+        # Track previous song and how many times we've refreshed
         self.song_prev = ''
         self.pic_counter = 0
 
     def _init_logger(self):
         """
-        Creates a console logger at DEBUG level and attaches it to
-        the 'spotipy_logger' we set up above.
+        Creates a console logger at DEBUG level and attaches it
+        to the 'spotipy_logger' we set up above.
         """
         logger = logging.getLogger('spotipy_logger')
         logger.setLevel(logging.DEBUG)
@@ -123,7 +122,7 @@ class SpotipiEinkDisplay:
     def _get_idle_image(self):
         """
         Returns an idle image according to idle_mode and idle_shuffle:
-          - If no images are found in the idle folder, returns the default image.
+          - If no images are found, returns the default image.
           - If shuffle is True, picks randomly.
           - Otherwise cycles through the list in order.
         """
@@ -139,12 +138,12 @@ class SpotipiEinkDisplay:
 
     def _break_fix(self, text: str, width: int, font: ImageFont, draw: ImageDraw):
         """
-        Breaks a string into lines so that each line does not exceed 'width'.
+        Break a string into lines so that each line does not exceed 'width'.
         """
         if not text:
             return
         if isinstance(text, str):
-            text = text.split()  # split into words
+            text = text.split()
         lo = 0
         hi = len(text)
         while lo < hi:
@@ -160,10 +159,12 @@ class SpotipiEinkDisplay:
         yield t, w
         yield from self._break_fix(text[lo:], width, font, draw)
 
-    def _fit_text_top_down(self, img: Image, text: str, text_color: str, shadow_text_color: str,
-                           font: ImageFont, y_offset: int, font_size: int,
-                           x_start_offset: int = 0, x_end_offset: int = 0,
-                           offset_text_px_shadow: int = 0) -> int:
+    def _fit_text_top_down(
+        self, img: Image, text: str, text_color: str, shadow_text_color: str,
+        font: ImageFont, y_offset: int, font_size: int,
+        x_start_offset: int = 0, x_end_offset: int = 0,
+        offset_text_px_shadow: int = 0
+    ) -> int:
         """
         Draw text from top to bottom, wrapping as needed, and return the height used.
         """
@@ -181,20 +182,20 @@ class SpotipiEinkDisplay:
             h_taken_by_text += font_size
         return h_taken_by_text
 
-    def _fit_text_bottom_up(self, img: Image, text: str, text_color: str, shadow_text_color: str,
-                            font: ImageFont, y_offset: int, font_size: int,
-                            x_start_offset: int = 0, x_end_offset: int = 0,
-                            offset_text_px_shadow: int = 0) -> int:
+    def _fit_text_bottom_up(
+        self, img: Image, text: str, text_color: str, shadow_text_color: str,
+        font: ImageFont, y_offset: int, font_size: int,
+        x_start_offset: int = 0, x_end_offset: int = 0,
+        offset_text_px_shadow: int = 0
+    ) -> int:
         """
         Draw text from bottom upward, wrapping as needed, and return the height used.
         """
         width = img.width - x_start_offset - x_end_offset - offset_text_px_shadow
         draw = ImageDraw.Draw(img)
         pieces = list(self._break_fix(text, width, font, draw))
-        # If multiple lines, move upward to accommodate them
         if len(pieces) > 1:
             y_offset -= (len(pieces) - 1) * font_size
-
         h_taken_by_text = 0
         for t, _ in pieces:
             if offset_text_px_shadow > 0:
@@ -207,7 +208,7 @@ class SpotipiEinkDisplay:
 
     def _display_clean(self):
         """
-        Clears the display (two passes) for either Inky or Waveshare.
+        Clears the display (two passes) for Inky or Waveshare.
         """
         try:
             if self.config.get('DEFAULT', 'model') == 'inky':
@@ -230,10 +231,8 @@ class SpotipiEinkDisplay:
         """
         Convert an Image to the 7-color format needed by Waveshare 4".
         """
-        # Boost saturation
         converter = ImageEnhance.Color(img)
         img = converter.enhance(saturation)
-        # Build a palette for 7 colors
         palette_data = [
             0x00, 0x00, 0x00,   # black
             0xff, 0xff, 0xff,   # white
@@ -243,7 +242,6 @@ class SpotipiEinkDisplay:
             0xff, 0xff, 0x00,   # yellow
             0xff, 0x80, 0x00    # orange
         ]
-        # Construct a palette image and apply
         palette_image = Image.new('P', (1, 1))
         palette_image.putpalette(palette_data + [0, 0, 0] * 248)
         img.load()
@@ -253,7 +251,7 @@ class SpotipiEinkDisplay:
 
     def _display_image(self, image: Image, saturation: float = 0.5):
         """
-        Displays the Image either on Inky or Waveshare, handling init calls.
+        Shows the Image on the Inky or Waveshare display.
         """
         try:
             if self.config.get('DEFAULT', 'model') == 'inky':
@@ -269,171 +267,179 @@ class SpotipiEinkDisplay:
             self.logger.error(f'Display image error: {e}')
             self.logger.error(traceback.format_exc())
 
-def _gen_pic(self, image: Image, artist: str, title: str, show_small_cover: bool) -> Image:
-    """
-    Generates the final composite image with the album artwork (or idle image),
-    background blur (if configured), and optional text (title/artist).
+    def _gen_pic(self, image: Image, artist: str, title: str, show_small_cover: bool) -> Image:
+        """
+        Generates the final composite image with the album artwork (or idle image),
+        background blur (if configured), and optional text (title/artist).
+        'show_small_cover' controls whether we paste a small overlay of 'image'.
+        """
+        album_cover_small_px = self.config.getint('DEFAULT', 'album_cover_small_px')
+        offset_px_left = self.config.getint('DEFAULT', 'offset_px_left')
+        offset_px_right = self.config.getint('DEFAULT', 'offset_px_right')
+        offset_px_top = self.config.getint('DEFAULT', 'offset_px_top')
+        offset_px_bottom = self.config.getint('DEFAULT', 'offset_px_bottom')
+        offset_text_px_shadow = self.config.getint('DEFAULT', 'offset_text_px_shadow', fallback=0)
+        text_direction = self.config.get('DEFAULT', 'text_direction', fallback='top-down')
+        background_blur = self.config.getint('DEFAULT', 'background_blur', fallback=0)
 
-    The new 'show_small_cover' parameter controls whether we paste
-    a small overlay version of the image at the top, ignoring the config
-    if show_small_cover = False.
-    """
-    album_cover_small_px = self.config.getint('DEFAULT', 'album_cover_small_px')
-    offset_px_left = self.config.getint('DEFAULT', 'offset_px_left')
-    offset_px_right = self.config.getint('DEFAULT', 'offset_px_right')
-    offset_px_top = self.config.getint('DEFAULT', 'offset_px_top')
-    offset_px_bottom = self.config.getint('DEFAULT', 'offset_px_bottom')
-    offset_text_px_shadow = self.config.getint('DEFAULT', 'offset_text_px_shadow', fallback=0)
-    text_direction = self.config.get('DEFAULT', 'text_direction', fallback='top-down')
-    background_blur = self.config.getint('DEFAULT', 'background_blur', fallback=0)
+        bg_w, bg_h = image.size
 
-    # Dimensions of source image
-    bg_w, bg_h = image.size
-
-    # Fit or repeat background
-    if self.config.get('DEFAULT', 'background_mode') == 'fit':
-        target_size = (self.config.getint('DEFAULT', 'width'), self.config.getint('DEFAULT', 'height'))
-        if bg_w != target_size[0] or bg_h != target_size[1]:
-            image_new = ImageOps.fit(image, target_size, centering=(0.5, 0.5))
+        # Fit or repeat background
+        bg_mode = self.config.get('DEFAULT', 'background_mode', fallback='fit')
+        if bg_mode == 'fit':
+            target_size = (self.config.getint('DEFAULT', 'width'),
+                           self.config.getint('DEFAULT', 'height'))
+            if bg_w != target_size[0] or bg_h != target_size[1]:
+                image_new = ImageOps.fit(image, target_size, centering=(0.5, 0.5))
+            else:
+                image_new = image.crop((0, 0, target_size[0], target_size[1]))
+        elif bg_mode == 'repeat':
+            target_w = self.config.getint('DEFAULT', 'width')
+            target_h = self.config.getint('DEFAULT', 'height')
+            image_new = Image.new('RGB', (target_w, target_h))
+            for x in range(0, target_w, bg_w):
+                for y in range(0, target_h, bg_h):
+                    image_new.paste(image, (x, y))
         else:
+            # fallback
+            target_size = (self.config.getint('DEFAULT', 'width'),
+                           self.config.getint('DEFAULT', 'height'))
             image_new = image.crop((0, 0, target_size[0], target_size[1]))
-    elif self.config.get('DEFAULT', 'background_mode') == 'repeat':
-        target_w = self.config.getint('DEFAULT', 'width')
-        target_h = self.config.getint('DEFAULT', 'height')
-        image_new = Image.new('RGB', (target_w, target_h))
-        for x in range(0, target_w, bg_w):
-            for y in range(0, target_h, bg_h):
-                image_new.paste(image, (x, y))
-    else:
-        # Fallback: just crop or do nothing
-        target_size = (self.config.getint('DEFAULT', 'width'), self.config.getint('DEFAULT', 'height'))
-        image_new = image.crop((0, 0, target_size[0], target_size[1]))
 
-    # If we want a blurred background, do it now (before we paste the small cover)
-    if background_blur > 0:
-        image_new = image_new.filter(ImageFilter.GaussianBlur(background_blur))
+        # Optional blur
+        if background_blur > 0:
+            image_new = image_new.filter(ImageFilter.GaussianBlur(background_blur))
 
-    # Only paste a smaller version if BOTH 'show_small_cover' is True
-    # AND the config says album_cover_small is True.
-    if show_small_cover and self.config.getboolean('DEFAULT', 'album_cover_small'):
-        cover_smaller = image.resize((album_cover_small_px, album_cover_small_px), Image.LANCZOS)
-        album_pos_x = (image_new.width - album_cover_small_px) // 2
-        image_new.paste(cover_smaller, (album_pos_x, offset_px_top))
-
-    # Prepare fonts
-    font_title = ImageFont.truetype(self.config.get('DEFAULT', 'font_path'),
-                                    self.config.getint('DEFAULT', 'font_size_title'))
-    font_artist = ImageFont.truetype(self.config.get('DEFAULT', 'font_path'),
-                                     self.config.getint('DEFAULT', 'font_size_artist'))
-
-    draw = ImageDraw.Draw(image_new)
-
-    # Render text depending on top-down or bottom-up
-    if text_direction == 'top-down':
-        # Place the song title first
-        title_position_y = offset_px_top
-        # If we *did* paste a smaller cover, bump text below it
+        # Paste smaller cover if show_small_cover and config says album_cover_small = True
         if show_small_cover and self.config.getboolean('DEFAULT', 'album_cover_small'):
-            title_position_y += album_cover_small_px + 10
+            cover_smaller = image.resize((album_cover_small_px, album_cover_small_px), Image.LANCZOS)
+            album_pos_x = (image_new.width - album_cover_small_px) // 2
+            image_new.paste(cover_smaller, (album_pos_x, offset_px_top))
 
-        title_height = self._fit_text_top_down(
-            img=image_new,
-            text=title,
-            text_color='white',
-            shadow_text_color='black',
-            font=font_title,
-            font_size=self.config.getint('DEFAULT', 'font_size_title'),
-            y_offset=title_position_y,
-            x_start_offset=offset_px_left,
-            x_end_offset=offset_px_right,
-            offset_text_px_shadow=offset_text_px_shadow
-        )
-        # Then place the artist text just below title
-        artist_position_y = title_position_y + title_height
-        self._fit_text_top_down(
-            img=image_new,
-            text=artist,
-            text_color='white',
-            shadow_text_color='black',
-            font=font_artist,
-            font_size=self.config.getint('DEFAULT', 'font_size_artist'),
-            y_offset=artist_position_y,
-            x_start_offset=offset_px_left,
-            x_end_offset=offset_px_right,
-            offset_text_px_shadow=offset_text_px_shadow
-        )
+        # Prepare fonts
+        font_title = ImageFont.truetype(self.config.get('DEFAULT', 'font_path'),
+                                        self.config.getint('DEFAULT', 'font_size_title'))
+        font_artist = ImageFont.truetype(self.config.get('DEFAULT', 'font_path'),
+                                         self.config.getint('DEFAULT', 'font_size_artist'))
 
-    elif text_direction == 'bottom-up':
-        # Place the artist first, hugging bottom
-        artist_position_y = image_new.height - (offset_px_bottom + self.config.getint('DEFAULT', 'font_size_artist'))
-        artist_height = self._fit_text_bottom_up(
-            img=image_new,
-            text=artist,
-            text_color='white',
-            shadow_text_color='black',
-            font=font_artist,
-            font_size=self.config.getint('DEFAULT', 'font_size_artist'),
-            y_offset=artist_position_y,
-            x_start_offset=offset_px_left,
-            x_end_offset=offset_px_right,
-            offset_text_px_shadow=offset_text_px_shadow
-        )
-        # Then title above that
-        title_position_y = artist_position_y - self.config.getint('DEFAULT', 'font_size_title') - artist_height
-        self._fit_text_bottom_up(
-            img=image_new,
-            text=title,
-            text_color='white',
-            shadow_text_color='black',
-            font=font_title,
-            font_size=self.config.getint('DEFAULT', 'font_size_title'),
-            y_offset=title_position_y,
-            x_start_offset=offset_px_left,
-            x_end_offset=offset_px_right,
-            offset_text_px_shadow=offset_text_px_shadow
-        )
+        draw = ImageDraw.Draw(image_new)
 
-    return image_new
+        # Render text
+        if text_direction == 'top-down':
+            # shift text below any small cover
+            title_position_y = offset_px_top
+            if show_small_cover and self.config.getboolean('DEFAULT','album_cover_small'):
+                title_position_y += album_cover_small_px + 10
+
+            title_height = self._fit_text_top_down(
+                img=image_new,
+                text=title,
+                text_color='white',
+                shadow_text_color='black',
+                font=font_title,
+                font_size=self.config.getint('DEFAULT', 'font_size_title'),
+                y_offset=title_position_y,
+                x_start_offset=offset_px_left,
+                x_end_offset=offset_px_right,
+                offset_text_px_shadow=offset_text_px_shadow
+            )
+            artist_position_y = title_position_y + title_height
+            self._fit_text_top_down(
+                img=image_new,
+                text=artist,
+                text_color='white',
+                shadow_text_color='black',
+                font=font_artist,
+                font_size=self.config.getint('DEFAULT', 'font_size_artist'),
+                y_offset=artist_position_y,
+                x_start_offset=offset_px_left,
+                x_end_offset=offset_px_right,
+                offset_text_px_shadow=offset_text_px_shadow
+            )
+        elif text_direction == 'bottom-up':
+            # bottom-up layout
+            artist_position_y = image_new.height - (offset_px_bottom + self.config.getint('DEFAULT', 'font_size_artist'))
+            artist_height = self._fit_text_bottom_up(
+                img=image_new,
+                text=artist,
+                text_color='white',
+                shadow_text_color='black',
+                font=font_artist,
+                font_size=self.config.getint('DEFAULT', 'font_size_artist'),
+                y_offset=artist_position_y,
+                x_start_offset=offset_px_left,
+                x_end_offset=offset_px_right,
+                offset_text_px_shadow=offset_text_px_shadow
+            )
+            title_position_y = artist_position_y - self.config.getint('DEFAULT','font_size_title') - artist_height
+            self._fit_text_bottom_up(
+                img=image_new,
+                text=title,
+                text_color='white',
+                shadow_text_color='black',
+                font=font_title,
+                font_size=self.config.getint('DEFAULT', 'font_size_title'),
+                y_offset=title_position_y,
+                x_start_offset=offset_px_left,
+                x_end_offset=offset_px_right,
+                offset_text_px_shadow=offset_text_px_shadow
+            )
+
+        return image_new
 
     def _display_update_process(self, song_request: list):
         """
-        Decides how to generate and display the final image based on
-        whether a song is playing or not. Cleans the display after
-        'display_refresh_counter' cycles to reduce e-paper ghosting.
+        Generates and displays the final image. Cleans after 'display_refresh_counter' cycles.
         """
         if song_request:
-            # song_request is [song_title, album_url, artist]
+            # song_request: [song_title, album_url, artist]
             try:
-                cover_response = requests.get(song_request[1], stream=True)
-                cover_response.raise_for_status()
-                cover = Image.open(cover_response.raw)
-                image = self._gen_pic(cover, song_request[2], song_request[0])
+                resp = requests.get(song_request[1], stream=True)
+                resp.raise_for_status()
+                cover = Image.open(resp.raw)
+
+                # show_small_cover=True for active track
+                image = self._gen_pic(
+                    cover,
+                    artist=song_request[2],
+                    title=song_request[0],
+                    show_small_cover=True
+                )
             except Exception as e:
                 self.logger.error(f"Failed to fetch/open album cover: {e}")
                 self.logger.error(traceback.format_exc())
-                # fallback to default idle/no-song image if there's a problem
-                fallback_cover = Image.open(self.default_idle_image)
-                image = self._gen_pic(fallback_cover, song_request[2], song_request[0])
-        else:
-            # No song is playing -> use the idle logic
-            idle_img = self._get_idle_image()
-            image = self._gen_pic(idle_img, "", "")
 
-        # Clean the screen after N refreshes
+                fallback_cover = Image.open(self.default_idle_image)
+                image = self._gen_pic(
+                    fallback_cover,
+                    artist=song_request[2],
+                    title=song_request[0],
+                    show_small_cover=True
+                )
+        else:
+            # Idle: no text, no small cover
+            idle_img = self._get_idle_image()
+            image = self._gen_pic(
+                idle_img,
+                artist="",
+                title="",
+                show_small_cover=False
+            )
+
+        # Clean screen occasionally
         refresh_limit = self.config.getint('DEFAULT', 'display_refresh_counter', fallback=20)
         if self.pic_counter > refresh_limit:
             self._display_clean()
             self.pic_counter = 0
 
-        # Display the final composed image
+        # Show final image
         self._display_image(image)
         self.pic_counter += 1
 
     @limit_recursion(limit=10)
     def _get_song_info(self) -> list:
         """
-        Retrieves the currently playing track (or episode) from Spotify.
-        Returns [song_title, album_cover_url, artist_name] or [] if none/ad.
+        Returns [song_title, cover_url, artist] or [] if no track.
         """
         scope = 'user-read-currently-playing,user-modify-playback-state'
         username = self.config.get('DEFAULT', 'username')
@@ -453,26 +459,24 @@ def _gen_pic(self, image: Image, artist: str, title: str, show_small_cover: bool
                         return [song, cover_url, artist]
                     elif ctype == 'track':
                         song = result["item"]["name"]
-                        # Join all artists with comma
+                        # combine all artist names
                         artist = ', '.join(a["name"] for a in result["item"]["artists"])
                         cover_url = result["item"]["album"]["images"][0]["url"]
                         return [song, cover_url, artist]
                     elif ctype == 'ad':
-                        # Advertisement playing => treat as no song
+                        # Spotify ad playing
                         return []
                     elif ctype == 'unknown':
-                        # The API might return unknown temporarily
                         time.sleep(0.01)
                         return self._get_song_info()
                     self.logger.error(f"Unsupported currently_playing_type: {ctype}")
                     return []
                 except TypeError:
-                    # Spotipy occasionally returns None or partial data
                     self.logger.error("TypeError from Spotipy, retrying...")
                     time.sleep(0.01)
                     return self._get_song_info()
             else:
-                # result was None -> no track currently playing
+                # None -> no track playing
                 return []
         else:
             self.logger.error(f"Error: Can't get token for {username}")
@@ -480,27 +484,22 @@ def _gen_pic(self, image: Image, artist: str, title: str, show_small_cover: bool
 
     def start(self):
         """
-        Main loop: polls Spotify for current track,
-        updates e-ink display or idle image as needed.
+        Main loop: polls Spotify for current track, or idle if none.
         """
         self.logger.info('Service started')
-        # Clean screen initially
         self._display_clean()
 
         try:
             while True:
                 try:
-                    # Check Spotify for what's playing
                     song_request = self._get_song_info()
-
                     if song_request:
-                        # Compare new track ID to old
                         new_song_key = song_request[0] + song_request[1]
                         if self.song_prev != new_song_key:
                             self.song_prev = new_song_key
                             self._display_update_process(song_request)
                     else:
-                        # No song playing scenario
+                        # no track => idle
                         if self.song_prev != 'NO_SONG':
                             self.song_prev = 'NO_SONG'
                             self._display_update_process([])
@@ -517,3 +516,4 @@ def _gen_pic(self, image: Image, artist: str, title: str, show_small_cover: bool
 if __name__ == "__main__":
     service = SpotipiEinkDisplay()
     service.start()
+
