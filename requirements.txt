@@ -1,3 +1,4 @@
 spotipy
+redis
 pillow
 inky[rpi,example-depends]
