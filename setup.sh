@@ -73,7 +73,7 @@ echo "Activating Spotipi Python environment"
 source "${install_path}/spotipienv/bin/activate"
 
 echo "Installing Python packages from requirements.txt"
-pip3 install --upgrade -r requirements.txt
+pip3 install --upgrade --ignore-installed --no-deps -r requirements.txt
 echo "##### Spotipi Python environment created" 
 echo
 
