@@ -499,10 +499,14 @@ class SpotipiEinkDisplay:
                             self.song_prev = new_song_key
                             self._display_update_process(song_request)
                     else:
-                        # no track => idle
-                        if self.song_prev != 'NO_SONG':
-                            self.song_prev = 'NO_SONG'
-                            self._display_update_process([])
+                        # We’re idle
+                        self.song_prev = 'NO_SONG'
+                        self._display_update_process([])
+    
+                        # Optional: wait for self.idle_display_time, then skip the usual loop delay
+                        # so we don’t update again for X seconds
+                        time.sleep(self.idle_display_time)
+                        continue  # goes to the next iteration, skipping time.sleep(self.delay)
                 except Exception as e:
                     self.logger.error(f"Error in main loop: {e}")
                     self.logger.error(traceback.format_exc())
