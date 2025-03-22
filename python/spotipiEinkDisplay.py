@@ -1,8 +1,3 @@
-print("DEBUG: File loaded")
-
-class SpotipiEinkDisplay:
-    def __init__(self, delay=1):
-        print("DEBUG: Entered __init__")
 import time
 import sys
 import logging
@@ -15,6 +10,11 @@ import configparser
 import requests
 import signal
 import random
+print("DEBUG: File loaded")
+
+class SpotipiEinkDisplay:
+    def __init__(self, delay=1):
+        print("DEBUG: Entered __init__")
 from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageEnhance, ImageFilter
 
 # Recursion limiter to avoid infinite loops in _get_song_info()
