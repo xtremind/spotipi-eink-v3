@@ -376,7 +376,7 @@ class SpotipiEinkDisplay:
                 text_color='white',
                 shadow_text_color='black',
                 font=font_title,
-                font_size=self.config.getint('DEFAULT', '_
+                font_size=self.config.getint('DEFAULT', 'font_size_artist'),
 
             )
         return image_new  # end of _gen_pic
