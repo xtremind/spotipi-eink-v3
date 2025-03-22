@@ -65,6 +65,8 @@ class SpotipiEinkDisplay:
             backupCount=3
         )
         logger.addHandler(handler)
+        self.logger = logger
+        self.logger.info('Logger test: initialization complete')
 
         # Create a more verbose console logger
         self.logger = self._init_logger()
