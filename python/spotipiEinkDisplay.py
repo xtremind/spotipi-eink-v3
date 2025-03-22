@@ -518,3 +518,7 @@ class SpotipiEinkDisplay:
         except KeyboardInterrupt:
             self.logger.info("Service stopping via KeyboardInterrupt")
             sys.exit(0)
+
+if __name__ == "__main__":
+    service = SpotipiEinkDisplay()
+    service.start()
