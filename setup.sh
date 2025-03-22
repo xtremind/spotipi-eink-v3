@@ -1,6 +1,5 @@
 #!/bin/bash
 #
-# Merged setup script: oldsetup.sh + currentsetup.sh
 # --------------------------------------------------
 # This script installs system packages, creates a Python venv, configures
 # the "spotipi-eink" repository, prompts for Spotify credentials, and
