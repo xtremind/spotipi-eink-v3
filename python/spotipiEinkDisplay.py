@@ -1,21 +1,29 @@
+print("DEBUG: File loaded")
+
 import time
+print("DEBUG: After import time")
+
 import sys
+print("DEBUG: After import sys")
+
 import logging
 from logging.handlers import RotatingFileHandler
+print("DEBUG: After import logging")
+
 import spotipy
 import spotipy.util as util
+print("DEBUG: After import spotipy")
+
 import os
 import traceback
 import configparser
 import requests
 import signal
 import random
-print("DEBUG: File loaded")
+print("DEBUG: After import os and other libs")
 
-class SpotipiEinkDisplay:
-    def __init__(self, delay=1):
-        print("DEBUG: Entered __init__")
 from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageEnhance, ImageFilter
+print("DEBUG: After import PIL")
 
 # Recursion limiter to avoid infinite loops in _get_song_info()
 def limit_recursion(limit):
@@ -216,6 +224,7 @@ class SpotipiEinkDisplay:
         """
         try:
             if self.config.get('DEFAULT', 'model') == 'inky':
+                print("DEBUG: about to import inky.auto")
                 inky = self.inky_auto()
                 for _ in range(2):
                     for y in range(inky.height):
