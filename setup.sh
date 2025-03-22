@@ -196,7 +196,6 @@ select opt in "${options[@]}"
 do
     case $opt in
         "Pimoroni Inky Impression 4 (640x400)")
-            echo "[DEFAULT]" >> "$EINK_CONFIG_FILE"
             echo "width = 640" >> "$EINK_CONFIG_FILE"
             echo "height = 400" >> "$EINK_CONFIG_FILE"
             echo "album_cover_small_px = 200" >> "$EINK_CONFIG_FILE"
@@ -206,7 +205,6 @@ do
             break
             ;;
         "Waveshare 4.01inch ACeP 4 (640x400)")
-            echo "[DEFAULT]" >> "$EINK_CONFIG_FILE"
             echo "width = 640" >> "$EINK_CONFIG_FILE"
             echo "height = 400" >> "$EINK_CONFIG_FILE"
             echo "album_cover_small_px = 200" >> "$EINK_CONFIG_FILE"
@@ -215,7 +213,6 @@ do
             break
             ;;
         "Pimoroni Inky Impression 5.7 (600x448)")
-            echo "[DEFAULT]" >> "$EINK_CONFIG_FILE"
             echo "width = 600" >> "$EINK_CONFIG_FILE"
             echo "height = 448" >> "$EINK_CONFIG_FILE"
             echo "album_cover_small_px = 250" >> "$EINK_CONFIG_FILE"
@@ -225,7 +222,6 @@ do
             break
             ;;
         "Pimoroni Inky Impression 7.3 (800x480)")
-            echo "[DEFAULT]" >> "$EINK_CONFIG_FILE"
             echo "width = 800" >> "$EINK_CONFIG_FILE"
             echo "height = 480" >> "$EINK_CONFIG_FILE"
             echo "album_cover_small_px = 300" >> "$EINK_CONFIG_FILE"
