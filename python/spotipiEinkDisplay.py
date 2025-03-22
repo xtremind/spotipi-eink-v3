@@ -69,6 +69,28 @@ class SpotipiEinkDisplay:
         self.logger.warning('SIGTERM received, stopping')
         sys.exit(0)
 
+    def _display_clean(self):
+        """Cleans the eInk display to prevent burn-in or ghosting."""
+        try:
+            if self.config.get('DEFAULT', 'model') == 'inky':
+                inky = self.inky_auto()
+                for _ in range(2):
+                    for y in range(inky.height - 1):
+                        for x in range(inky.width - 1):
+                            inky.set_pixel(x, y, self.inky_clean)
+                    inky.show()
+                    time.sleep(1.0)
+
+            elif self.config.get('DEFAULT', 'model') == 'waveshare4':
+                epd = self.wave4.EPD()
+                epd.init()
+                epd.Clear()
+
+        except Exception as e:
+            self.logger.error(f'Display clean error: {e}')
+            self.logger.error(traceback.format_exc())
+
+
     def _cycle_idle_images(self):
         """Cycles through images in the idle folder while idle."""
         images = [os.path.join(self.idle_folder, img) for img in os.listdir(self.idle_folder) if img.endswith(('.png', '.jpg', '.jpeg'))]
