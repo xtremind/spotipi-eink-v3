@@ -353,7 +353,7 @@ class SpotipiEinkDisplay:
                 offset_text_px_shadow=offset_text_px_shadow
             )
 
-          elif text_direction == 'bottom-up':
+        elif text_direction == 'bottom-up':
             # Place the artist first, hugging bottom
             artist_position_y = image_new.height - (offset_px_bottom + self.config.getint('DEFAULT', 'font_size_artist'))
             artist_height = self._fit_text_bottom_up(
