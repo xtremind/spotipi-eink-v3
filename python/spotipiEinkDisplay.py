@@ -1,3 +1,8 @@
+print("DEBUG: File loaded")
+
+class SpotipiEinkDisplay:
+    def __init__(self, delay=1):
+        print("DEBUG: Entered __init__")
 import time
 import sys
 import logging
