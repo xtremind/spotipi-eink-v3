@@ -112,6 +112,7 @@ ensure_config_option() {
 }
 
 # Make sure essential lines are present
+ensure_config_option "no_song_cover" "${install_path}/resources/default.jpg"
 ensure_config_option "spotipy_log"   "${install_path}/log/spotipy.log"
 
 # We’ll fill in more config entries after the user chooses the display.
