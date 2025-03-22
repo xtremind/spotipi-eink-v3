@@ -100,7 +100,6 @@ idle_shuffle = false
 
 # Basic placeholders (will be overwritten below)
 no_song_cover = ${install_path}/resources/default.jpg
-spotipy_log = ${install_path}/log/spotipy.log
 EOF
 fi
 
