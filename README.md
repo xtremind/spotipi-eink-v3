@@ -34,7 +34,7 @@ The display refresh time is ~30 seconds.
 * Edit the settings of the application within the dashboard.
     * Set the redirect to
       ```
-      http://localhost/redirect
+      http://127.0.0.1:8888/callback/spotify
       ```
 
 * Download the install script
