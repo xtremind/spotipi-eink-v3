@@ -33,7 +33,6 @@ sudo apt-get install -y \
     git \
     libopenjp2-7 \
     libjpeg-dev
-    python3-libgpiod
 
 ### 3) Enable SPI & I2C
 echo
