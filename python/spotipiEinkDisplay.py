@@ -483,39 +483,41 @@ class SpotipiEinkDisplay:
             return []
 
     def start(self):
-        """
-        Main loop: polls Spotify for current track, or idle if none.
-        """
-        self.logger.info('Service started')
-        self._display_clean()
+    """
+    Main loop: polls Spotify for current track, or idle if none.
+    """
+    self.logger.info('Service started')
+    self._display_clean()
 
-        try:
-            while True:
-                try:
-                    song_request = self._get_song_info()
-                    if song_request:
-                        new_song_key = song_request[0] + song_request[1]
-                        if self.song_prev != new_song_key:
-                            self.song_prev = new_song_key
-                            self._display_update_process(song_request)
-                    else:
-                        # We’re idle
-                        self.song_prev = 'NO_SONG'
-                        self._display_update_process([])
+    try:
+        while True:
+            try:
+                song_request = self._get_song_info()
+                self.logger.debug(f"Song info returned: {song_request}")
+                if song_request:
+                    new_song_key = song_request[0] + song_request[1]
+                    if self.song_prev != new_song_key:
+                        self.logger.info(f"New song detected: {song_request[0]} by {song_request[2]}")
+                        self.song_prev = new_song_key
+                        self._display_update_process(song_request)
+                else:
+                    self.logger.info("No track detected - switching to idle image.")
+                    self.song_prev = 'NO_SONG'
+                    self._display_update_process([])
 
-                        # Optional: wait for self.idle_display_time, then skip the usual loop delay
-                        # so we don’t update again for X seconds
-                        time.sleep(self.idle_display_time)
-                        continue  # goes to the next iteration, skipping time.sleep(self.delay)
-                except Exception as e:
-                    self.logger.error(f"Error in main loop: {e}")
-                    self.logger.error(traceback.format_exc())
+                    self.logger.debug(f"Sleeping for idle_display_time: {self.idle_display_time} seconds")
+                    time.sleep(self.idle_display_time)
+                    continue  # Skip the usual delay
+            except Exception as e:
+                self.logger.error(f"Error in main loop: {e}")
+                self.logger.error(traceback.format_exc())
 
-                time.sleep(self.delay)
+            time.sleep(self.delay)
 
-        except KeyboardInterrupt:
-            self.logger.info("Service stopping via KeyboardInterrupt")
-            sys.exit(0)
+    except KeyboardInterrupt:
+        self.logger.info("Service stopping via KeyboardInterrupt")
+        sys.exit(0)
+
 
 if __name__ == "__main__":
     service = SpotipiEinkDisplay()
