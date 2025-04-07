@@ -2,5 +2,4 @@ spotipy
 redis
 async-timeout
 pillow
-gpiod
 inky[rpi,example-depends]
