@@ -306,8 +306,8 @@ class SpotipiEinkDisplay:
                            self.config.getint('DEFAULT', 'height'))
             image_new = image.crop((0, 0, target_size[0], target_size[1]))
 
-        # Optional blur
-        if background_blur > 0:
+        # Optional blur: apply only if small artwork is enabled
+        if self.config.getboolean('DEFAULT', 'album_cover_small') and background_blur > 0:
             image_new = image_new.filter(ImageFilter.GaussianBlur(background_blur))
 
         # Paste smaller cover if show_small_cover and config says album_cover_small = True
@@ -502,7 +502,7 @@ class SpotipiEinkDisplay:
                         # We’re idle
                         self.song_prev = 'NO_SONG'
                         self._display_update_process([])
-    
+
                         # Optional: wait for self.idle_display_time, then skip the usual loop delay
                         # so we don’t update again for X seconds
                         time.sleep(self.idle_display_time)
@@ -520,4 +520,3 @@ class SpotipiEinkDisplay:
 if __name__ == "__main__":
     service = SpotipiEinkDisplay()
     service.start()
-
