@@ -52,10 +52,6 @@ if [ -d "spotipi-eink" ]; then
     echo "Old installation found deleting it"
     sudo rm -rf spotipi-eink
 fi
-if [ -d "spotipi-eink" ]; then
-    echo "Old installation found deleting it"
-    sudo rm -rf spotipi-eink
-fi
 
 ### 5) Clone repo
 echo
