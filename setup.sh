@@ -60,6 +60,10 @@ git clone https://github.com/Canterrain/spotipi-eink
 echo "Switching into instalation directory"
 cd spotipi-eink
 install_path=$(pwd)
+
+echo
+echo "###### Using spotipi-eink commit:"
+git log -1 --oneline
 echo
 
 ### 6) Create python virtual environment & install dependencies
