@@ -9,7 +9,6 @@
 # NOTE: Run as a normal user (not root). The script calls `sudo` for steps
 # that require elevated privileges.
 
-
 ### 0) Don’t run as root
 if [[ $EUID -eq 0 ]]; then
   echo "This script must NOT be run as root" 1>&2
@@ -209,6 +208,16 @@ do
             ;;
     esac
 done
+
+### 10.1) Configure /boot/firmware/config.txt for Inky screens
+if [ "$BUTTONS" -eq "1" ]; then
+    echo "###### Configuring dtoverlay for Inky display in /boot/firmware/config.txt"
+    if ! grep -q "^dtoverlay=spi0-0cs" /boot/firmware/config.txt; then
+        echo "dtoverlay=spi0-0cs" | sudo tee -a /boot/firmware/config.txt
+    else
+        echo "dtoverlay=spi0-0cs is already present in /boot/firmware/config.txt"
+    fi
+fi
 
 ### 11) Add more default config lines for text direction, offsets, etc.
 echo
