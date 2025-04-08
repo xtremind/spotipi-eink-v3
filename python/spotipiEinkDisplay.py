@@ -505,8 +505,16 @@ class SpotipiEinkDisplay:
                         self.song_prev = 'NO_SONG'
                         self._display_update_process([])
 
-                        self.logger.debug(f"Sleeping for idle_display_time: {self.idle_display_time} seconds")
-                        time.sleep(self.idle_display_time)
+                        # Instead of a long sleep, break the idle wait into increments
+                        self.logger.debug(f"Entering idle sleep mode: up to {self.idle_display_time} seconds, polling every 5 seconds")
+                        sleep_increment = 5
+                        elapsed = 0
+                        while elapsed < self.idle_display_time:
+                            time.sleep(sleep_increment)
+                            elapsed += sleep_increment
+                            if self._get_song_info():
+                                self.logger.info("Track detected during idle sleep; breaking idle sleep early.")
+                                break
                         continue  # Skip the usual delay
                 except Exception as e:
                     self.logger.error(f"Error in main loop: {e}")
