@@ -326,11 +326,8 @@ class SpotipiEinkDisplay:
 
         # Render text
         if text_direction == 'top-down':
-            # Use the older fixed offset if a small cover is shown
-            if show_small_cover and self.config.getboolean('DEFAULT', 'album_cover_small'):
-                title_position_y = album_cover_small_px + offset_px_top + 10
-            else:
-                title_position_y = offset_px_top
+            # Use the fixed offsets as in the older version
+            title_position_y = album_cover_small_px + offset_px_top + 10
             title_height = self._fit_text_top_down(
                 img=image_new,
                 text=title,
@@ -343,11 +340,7 @@ class SpotipiEinkDisplay:
                 x_end_offset=offset_px_right,
                 offset_text_px_shadow=offset_text_px_shadow
             )
-            # Place artist text immediately below title using the same base offset as before
-            if show_small_cover and self.config.getboolean('DEFAULT', 'album_cover_small'):
-                artist_position_y = album_cover_small_px + offset_px_top + 10 + title_height
-            else:
-                artist_position_y = title_position_y + title_height
+            artist_position_y = album_cover_small_px + offset_px_top + 10 + title_height
             self._fit_text_top_down(
                 img=image_new,
                 text=artist,
@@ -359,9 +352,8 @@ class SpotipiEinkDisplay:
                 x_start_offset=offset_px_left,
                 x_end_offset=offset_px_right,
                 offset_text_px_shadow=offset_text_px_shadow
-            )   
+            )
         elif text_direction == 'bottom-up':
-            # bottom-up layout
             artist_position_y = image_new.height - (offset_px_bottom + self.config.getint('DEFAULT', 'font_size_artist'))
             artist_height = self._fit_text_bottom_up(
                 img=image_new,
@@ -375,7 +367,7 @@ class SpotipiEinkDisplay:
                 x_end_offset=offset_px_right,
                 offset_text_px_shadow=offset_text_px_shadow
             )
-            title_position_y = artist_position_y - self.config.getint('DEFAULT','font_size_title') - artist_height
+            title_position_y = image_new.height - (offset_px_bottom + self.config.getint('DEFAULT', 'font_size_title')) - artist_height
             self._fit_text_bottom_up(
                 img=image_new,
                 text=title,
