@@ -290,7 +290,7 @@ class SpotipiEinkDisplay:
             target_size = (self.config.getint('DEFAULT', 'width'),
                            self.config.getint('DEFAULT', 'height'))
             if bg_w != target_size[0] or bg_h != target_size[1]:
-                image_new = ImageOps.fit(image, target_size, centering=(0.5, 0.5))
+                image_new = ImageOps.fit(image, target_size, centering=(0.0, 0.0))
             else:
                 image_new = image.crop((0, 0, target_size[0], target_size[1]))
         elif bg_mode == 'repeat':
