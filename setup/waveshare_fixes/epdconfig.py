@@ -1,3 +1,6 @@
+# This version of epdconfig.py is copied from Waveshare's official
+# 4inch_e-Paper_E example to fix GPIO access issues with lgpio on Pi OS.
+# See: https://www.waveshare.com/wiki/4inch_e-Paper_HAT%2B-(E)
 # /*****************************************************************************
 # * | File        :	  epdconfig.py
 # * | Author      :   Waveshare team
