@@ -184,6 +184,8 @@ do
             echo "height = 400" >> "$EINK_CONFIG_FILE"
             echo "album_cover_small_px = 200" >> "$EINK_CONFIG_FILE"
             echo "model = waveshare4" >> "$EINK_CONFIG_FILE"
+            echo "Applying Waveshare GPIO patch to epdconfig.py..."
+            cp "${install_path}/setup/waveshare_fixes/epdconfig.py" "${install_path}/python/lib/epdconfig.py"
             BUTTONS=0
             break
             ;;
