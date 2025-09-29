@@ -200,3 +200,4 @@ export SPOTIPY_REDIRECT_URI=''
 ```
 To leave the Virtual Python environment just type: **deactivate**
 
+see detail [here](https://www.instructables.com/-Spotify-Color-E-Ink-Desk-Display/)
